@@ -1,22 +1,22 @@
 import { useRef } from "react";
 
 export default function OtpBoxInput({ value, onChange }) {
-  const inputsRef = useRef([]);
+  const refs = useRef([]);
 
-  const handleChange = (e, index) => {
-    const val = e.target.value.replace(/\D/g, "");
-    if (!val) return;
+  const handleChange = (e, i) => {
+    const v = e.target.value.replace(/\D/g, "");
+    if (!v) return;
 
-    const newValue = value.split("");
-    newValue[index] = val;
-    onChange(newValue.join("").slice(0, 6));
+    const next = value.split("");
+    next[i] = v;
+    onChange(next.join("").slice(0, 6));
 
-    if (index < 5) inputsRef.current[index + 1].focus();
+    if (i < 5) refs.current[i + 1].focus();
   };
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !value[index] && index > 0) {
-      inputsRef.current[index - 1].focus();
+  const handleBack = (e, i) => {
+    if (e.key === "Backspace" && !value[i] && i > 0) {
+      refs.current[i - 1].focus();
     }
   };
 
@@ -25,14 +25,14 @@ export default function OtpBoxInput({ value, onChange }) {
       {Array.from({ length: 6 }).map((_, i) => (
         <input
           key={i}
-          ref={(el) => (inputsRef.current[i] = el)}
+          ref={(el) => (refs.current[i] = el)}
           type="text"
-          inputMode="numeric"
           maxLength={1}
+          inputMode="numeric"
           value={value[i] || ""}
           onChange={(e) => handleChange(e, i)}
-          onKeyDown={(e) => handleKeyDown(e, i)}
-          className="w-12 h-14 text-center text-xl font-bold rounded-xl bg-black/40 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          onKeyDown={(e) => handleBack(e, i)}
+          className="w-12 h-14 text-xl font-bold text-center rounded-xl bg-black/40 border border-white/20 text-white focus:ring-2 focus:ring-blue-500"
         />
       ))}
     </div>

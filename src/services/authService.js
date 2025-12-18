@@ -5,11 +5,12 @@ export const registerUser = async (payload) => {
   return response.data;
 };
 
-export const verifyOtp = async (payload) => {
-  const response = await api.post("/auth/verify-otp", payload);
-  return response.data;
+export const verifyOtp = async ({ email, otp }) => {
+  const res = await api.post("/auth/verify-otp", { email, otp });
+  return res.data;
 };
+
 export const resendOtp = async (email) => {
-  const response = await api.post("/auth/resend-otp", { email });
-  return response.data;
+  const res = await api.post("/auth/resend-otp", { email });
+  return res.data;
 };

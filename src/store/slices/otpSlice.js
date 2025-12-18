@@ -1,13 +1,14 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { resendOtp, verifyOtp } from "../../services/authService";
+import { verifyOtp, resendOtp } from "../../services/authService";
+import { OTP_MAX_ATTEMPTS, OTP_LOCK_TIME } from "../../constants/security";
 
 export const verifyOTP = createAsyncThunk(
   "otp/verify",
-  async (data, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
-      return await verifyOtp(data);
-    } catch (error) {
-      return rejectWithValue(error);
+      return await verifyOtp(payload);
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
@@ -17,8 +18,8 @@ export const resendOTP = createAsyncThunk(
   async (email, { rejectWithValue }) => {
     try {
       return await resendOtp(email);
-    } catch (error) {
-      return rejectWithValue(error);
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
@@ -29,8 +30,20 @@ const otpSlice = createSlice({
     loading: false,
     success: false,
     error: null,
+    attempts: 0,
+    lockedUntil: null,
   },
   reducers: {
+    incrementAttempt: (state) => {
+      state.attempts += 1;
+    },
+    lockOtp: (state) => {
+      state.lockedUntil = Date.now() + OTP_LOCK_TIME * 1000;
+    },
+    resetAttempts: (state) => {
+      state.attempts = 0;
+      state.lockedUntil = null;
+    },
     resetOtpState: (state) => {
       state.loading = false;
       state.success = false;
@@ -64,5 +77,6 @@ const otpSlice = createSlice({
   },
 });
 
-export const { resetOtpState } = otpSlice.actions;
+export const { incrementAttempt, lockOtp, resetAttempts, resetOtpState } =
+  otpSlice.actions;
 export default otpSlice.reducer;
