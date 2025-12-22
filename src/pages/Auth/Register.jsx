@@ -9,7 +9,7 @@ import { Notify } from "../../utils/notify";
 export default function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading,  success } = useSelector((state) => state.auth);
+  const { loading, success, error } = useSelector((state) => state.auth);
 
   const [form, setForm] = useState({
     name: "",
@@ -37,7 +37,6 @@ export default function Register() {
       }
     }
 
-    // 2️⃣ Password match validation
     if (form.password !== form.confirmPassword) {
       Notify("Password and Confirm Password do not match", "error");
       return;
@@ -54,11 +53,16 @@ export default function Register() {
   };
 
   useEffect(() => {
+    if (error) Notify(error, "error");
+  }, [error]);
+
+  useEffect(() => {
     if (success) {
-      navigate("/login");
+      // Flow 1: Redirect to Verify OTP page
+      navigate("/verify-otp", { state: { email: form.email } });
       dispatch(resetAuthState());
     }
-  }, [success, navigate, dispatch]);
+  }, [success, navigate, dispatch, form.email]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black px-4">
