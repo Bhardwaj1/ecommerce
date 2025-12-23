@@ -1,52 +1,80 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useAuth } from "../context/AuthContext";
+import { useMeeting } from "../context/MeetingContext";
+import {
+  joinMeetingRoom,
+  leaveMeetingRoom,
+  onUserJoined,
+  onUserLeft,
+  offUserJoined,
+  offUserLeft,
+} from "../socket/socketEvents";
 import VideoTile from "../components/meeting/VideoTile";
 import Controls from "../components/meeting/Controls";
-import ChatPanel from "../components/meeting/ChatPanel";
 
 export default function MeetingRoom() {
+  const { meetingId } = useSelector((state) => state.meeting);
+  const { user } = useAuth();
+  const { participants, setParticipants } = useMeeting();
   const [showChat, setShowChat] = useState(false);
+
+  useEffect(() => {
+    if (!meetingId || !user) return;
+
+    console.log("🟢 Joining socket meeting:", meetingId);
+
+    joinMeetingRoom({
+      meetingId,
+      userId: user.id,
+    });
+
+    const handleUserJoined = ({ userId }) => {
+      console.log("👤 User joined:", userId);
+      setParticipants((prev) => {
+        if (prev.find((p) => p.id === userId)) return prev;
+        return [...prev, { id: userId }];
+      });
+    };
+
+    const handleUserLeft = ({ userId }) => {
+      console.log("🚪 User left:", userId);
+      setParticipants((prev) =>
+        prev.filter((p) => p.id !== userId)
+      );
+    };
+
+    onUserJoined(handleUserJoined);
+    onUserLeft(handleUserLeft);
+
+    return () => {
+      console.log("🔴 Leaving socket meeting:", meetingId);
+
+      leaveMeetingRoom({
+        meetingId,
+        userId: user.id,
+      });
+
+      offUserJoined();
+      offUserLeft();
+    };
+  }, [meetingId, user, setParticipants]);
 
   return (
     <div className="h-screen bg-black flex flex-col">
-      {/* Top Bar */}
-      <div className="h-14 flex items-center justify-between px-4 bg-gray-900 border-b border-gray-800">
-        <h1 className="text-sm md:text-base font-semibold">
-          Meeting in progress
-        </h1>
-
-        <button
-          onClick={() => setShowChat(!showChat)}
-          className="text-sm px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 transition"
-        >
-          💬 Chat
-        </button>
+      <div className="h-14 flex items-center justify-between px-4 bg-gray-900">
+        <h1 className="font-semibold">Meeting in progress</h1>
+        <button onClick={() => setShowChat(!showChat)}>💬 Chat</button>
       </div>
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Video Grid */}
-        <div
-          className={`flex-1 grid gap-3 p-3 transition-all
-            grid-cols-1 
-            sm:grid-cols-2 
-            lg:grid-cols-${showChat ? "2" : "3"}
-          `}
-        >
-          <VideoTile name="You" isMe />
-          <VideoTile name="User 1" />
-          <VideoTile name="User 2" />
-          <VideoTile name="User 3" />
+      <div className="flex flex-1">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 p-3 flex-1">
+          {participants.map((p) => (
+            <VideoTile key={p.id} name={p.id} />
+          ))}
         </div>
-
-        {/* Chat Panel */}
-        {showChat && (
-          <div className="w-full md:w-80 border-l border-gray-800 bg-gray-900">
-            <ChatPanel />
-          </div>
-        )}
       </div>
 
-      {/* Controls */}
       <Controls />
     </div>
   );
