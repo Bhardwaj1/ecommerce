@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useAuth } from "../context/AuthContext";
 import { useMeeting } from "../context/MeetingContext";
@@ -17,39 +17,48 @@ export default function MeetingRoom() {
   const { meetingId } = useSelector((state) => state.meeting);
   const { user } = useAuth();
   const { participants, setParticipants } = useMeeting();
+  const hasJoinedRef = useRef(false);
   const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (!meetingId || !user) return;
 
-    console.log("🟢 Joining socket meeting:", meetingId);
+    if (hasJoinedRef.current) return;
+    hasJoinedRef.current = true;
 
+    // 🔌 Join meeting via socket
     joinMeetingRoom({
       meetingId,
-      userId: user.id,
+      user: {
+        id: user.id,
+        name: user.name,
+      },
     });
 
-    const handleUserJoined = ({ userId }) => {
-      console.log("👤 User joined:", userId);
+    const handleUserJoined = ({ user: joinedUser }) => {
       setParticipants((prev) => {
-        if (prev.find((p) => p.id === userId)) return prev;
-        return [...prev, { id: userId }];
+        // prevent duplicates
+        if (prev.find((p) => p.id === joinedUser.id)) return prev;
+
+        return [
+          ...prev,
+          {
+            id: joinedUser.id,
+            name: joinedUser.name,
+            isMe: joinedUser.id === user.id,
+          },
+        ];
       });
     };
 
     const handleUserLeft = ({ userId }) => {
-      console.log("🚪 User left:", userId);
-      setParticipants((prev) =>
-        prev.filter((p) => p.id !== userId)
-      );
+      setParticipants((prev) => prev.filter((p) => p.id !== userId));
     };
 
     onUserJoined(handleUserJoined);
     onUserLeft(handleUserLeft);
 
     return () => {
-      console.log("🔴 Leaving socket meeting:", meetingId);
-
       leaveMeetingRoom({
         meetingId,
         userId: user.id,
@@ -57,7 +66,27 @@ export default function MeetingRoom() {
 
       offUserJoined();
       offUserLeft();
+
+      hasJoinedRef.current = false;
     };
+  }, [meetingId, user, setParticipants]);
+
+  useEffect(() => {
+    if (!meetingId || !user) return;
+
+    setParticipants((prev) => {
+      const alreadyExists = prev.some((p) => p.id === user.id);
+      if (alreadyExists) return prev;
+
+      return [
+        ...prev,
+        {
+          id: user.id,
+          name: user.name,
+          isMe: true,
+        },
+      ];
+    });
   }, [meetingId, user, setParticipants]);
 
   return (
@@ -70,7 +99,7 @@ export default function MeetingRoom() {
       <div className="flex flex-1">
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 p-3 flex-1">
           {participants.map((p) => (
-            <VideoTile key={p.id} name={p.id} />
+            <VideoTile key={p._id} name={p.name} isMe={p.isMe} />
           ))}
         </div>
       </div>

@@ -10,7 +10,7 @@ export default function App() {
   const isLoading = useGlobalLoading();
 
   useEffect(() => {
-    connectSocket(); // 🔌 connect ONCE
+    connectSocket(); // 🔌 connect once for entire app
   }, []);
 
   return (

@@ -1,5 +1,7 @@
 import socket from "./socket";
 
+/* ---------- CONNECTION ---------- */
+
 export const connectSocket = () => {
   if (!socket.connected) {
     socket.connect();
@@ -14,6 +16,8 @@ export const disconnectSocket = () => {
   }
 };
 
+/* ---------- MEETING EVENTS ---------- */
+
 export const joinMeetingRoom = ({ meetingId, userId }) => {
   console.log("➡️ Joining meeting room:", meetingId);
   socket.emit("join-meeting", { meetingId, userId });
@@ -24,6 +28,8 @@ export const leaveMeetingRoom = ({ meetingId, userId }) => {
   socket.emit("leave-meeting", { meetingId, userId });
 };
 
+/* ---------- LISTENERS ---------- */
+
 export const onUserJoined = (cb) => {
   socket.on("user-joined", cb);
 };
@@ -31,6 +37,8 @@ export const onUserJoined = (cb) => {
 export const onUserLeft = (cb) => {
   socket.on("user-left", cb);
 };
+
+/* ---------- CLEANUP ---------- */
 
 export const offUserJoined = () => {
   socket.off("user-joined");
