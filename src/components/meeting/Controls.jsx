@@ -4,6 +4,7 @@ import Button from "../common/Button";
 import { leaveMeeting } from "../../store/slices/meetingSlice";
 import { useMeeting } from "../../context/MeetingContext";
 import { Notify } from "../../utils/notify";
+import { leaveMeetingRoom } from "../../socket/socketEvents";
 
 export default function Controls() {
   const dispatch = useDispatch();
@@ -16,22 +17,24 @@ export default function Controls() {
     const confirmLeave = window.confirm(
       "Are you sure you want to leave the meeting?"
     );
-
     if (!confirmLeave) return;
 
     try {
-      // 1️⃣ Inform backend
+      // 🔥 SOCKET EVENT FIRST
+      leaveMeetingRoom(meetingId); // <-- this triggers the "⬅️ Leaving meeting room" log
+
+      // 1️⃣ Inform backend (REST API)
       if (meetingId) {
         await dispatch(leaveMeeting({ meetingId })).unwrap();
       }
 
-      // 2️⃣ Cleanup local session (camera, mic, participants)
+      // 2️⃣ Cleanup local media + participants
       leaveSession();
 
-      // 3️⃣ UX feedback
+      // 3️⃣ Notify UI
       Notify("You left the meeting", "success");
 
-      // 4️⃣ Redirect user
+      // 4️⃣ Redirect
       navigate("/", { replace: true });
     } catch (error) {
       Notify(error || "Failed to leave meeting", "error");

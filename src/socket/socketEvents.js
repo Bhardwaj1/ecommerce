@@ -1,55 +1,62 @@
 import socket from "./socket";
 
-/* ---------- CONNECTION ---------- */
+let joinedMeetingId = null;
 
+/* ---------- CONNECTION ---------- */
 export const connectSocket = () => {
   if (!socket.connected) {
+    console.log("🔌 Socket connecting...");
     socket.connect();
-    console.log("🔌 Socket connected:", socket.id);
   }
+};
+
+export const onSocketConnected = (cb) => {
+  socket.on("connect", () => {
+    console.log("✅ Socket connected:", socket.id);
+    cb?.();
+  });
 };
 
 export const disconnectSocket = () => {
   if (socket.connected) {
-    socket.disconnect();
     console.log("❌ Socket disconnected");
+    socket.disconnect();
   }
 };
 
 /* ---------- MEETING EVENTS ---------- */
-
-export const joinMeetingRoom = ({ meetingId, userId }) => {
+export const joinMeetingRoom = ({ meetingId }) => {
   console.log("➡️ Joining meeting room:", meetingId);
-  socket.emit("join-meeting", { meetingId, userId });
+
+  if (joinedMeetingId === meetingId) return; // prevent duplicate joins
+  joinedMeetingId = meetingId;
+
+  socket.emit("join-meeting", { meetingId });
 };
 
-export const leaveMeetingRoom = ({ meetingId, userId }) => {
-  console.log("⬅️ Leaving meeting room:", meetingId);
-  socket.emit("leave-meeting", { meetingId, userId });
-};
-
-export const endMeeting = ({ meetingId }) => {
-  socket.emit("end-meeting", {
-    meetingId,
-  });
+export const leaveMeetingRoom = (meetingId) => {
+  console.log("⬅️ Leaving meeting room");
+  joinedMeetingId = null;
+  socket.emit("leave-meeting", { meetingId });
 };
 
 /* ---------- LISTENERS ---------- */
-
-export const onUserJoined = (cb) => {
-  socket.on("user-joined", cb);
-};
-
-export const onUserLeft = (cb) => {
-  socket.on("user-left", cb);
-};
+export const onUserJoined = (cb) => socket.on("user-joined", cb);
+export const onUserLeft = (cb) => socket.on("user-left", cb);
+export const onParticipantsCount = (cb) => socket.on("participants-count", cb);
+export const onUserMuted = (cb) => socket.on("user-muted", cb);
+export const onUserUnmuted = (cb) => socket.on("user-unmuted", cb);
+export const onMeetingEnded = (cb) => socket.on("meeting-ended", cb);
 
 /* ---------- CLEANUP ---------- */
-
-export const offUserJoined = () => {
+export const offMeetingListeners = () => {
   socket.off("user-joined");
-};
-
-export const offUserLeft = () => {
   socket.off("user-left");
+  socket.off("participants-count");
+  socket.off("user-muted");
+  socket.off("user-unmuted");
+  socket.off("meeting-ended");
+
+  // Optionally disconnect:
+  // if (socket.connected) socket.disconnect();
 };

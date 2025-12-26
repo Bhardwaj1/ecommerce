@@ -1,44 +1,55 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
+import socket from "../socket/socket";
 import { useSelector } from "react-redux";
 import { useAuth } from "../context/AuthContext";
 import { useMeeting } from "../context/MeetingContext";
 import {
   joinMeetingRoom,
-  leaveMeetingRoom,
   onUserJoined,
   onUserLeft,
-  offUserJoined,
-  offUserLeft,
+  offMeetingListeners,
+  onSocketConnected,
 } from "../socket/socketEvents";
 import VideoTile from "../components/meeting/VideoTile";
 import Controls from "../components/meeting/Controls";
+
+/**
+ * 🔒 GLOBAL GUARD
+ * React StrictMode dev-only double mount protection
+ */
+let hasJoinedMeeting = false;
 
 export default function MeetingRoom() {
   const { meetingId } = useSelector((state) => state.meeting);
   const { user } = useAuth();
   const { participants, setParticipants } = useMeeting();
-  const hasJoinedRef = useRef(false);
-  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (!meetingId || !user) return;
 
-    if (hasJoinedRef.current) return;
-    hasJoinedRef.current = true;
+    const joinMeetingSafely = () => {
+      if (hasJoinedMeeting) return;
 
-    // 🔌 Join meeting via socket
-    joinMeetingRoom({
-      meetingId,
-      user: {
-        id: user.id,
-        name: user.name,
-      },
-    });
+      console.log("➡️ Joining meeting room:", meetingId);
+      hasJoinedMeeting = true;
+      joinMeetingRoom({ meetingId });
+    };
 
+    // 🔑 Case 1: socket already connected
+    if (socket.connected) {
+      console.log("🟢 Socket already connected");
+      joinMeetingSafely();
+    }
+    // 🔑 Case 2: socket will connect later
+    else {
+      console.log("🟡 Waiting for socket connection");
+      onSocketConnected(joinMeetingSafely);
+    }
+
+    // 🔔 user joined
     const handleUserJoined = ({ user: joinedUser }) => {
       setParticipants((prev) => {
-        // prevent duplicates
-        if (prev.find((p) => p.id === joinedUser.id)) return prev;
+        if (prev.some((p) => p.id === joinedUser.id)) return prev;
 
         return [
           ...prev,
@@ -51,6 +62,7 @@ export default function MeetingRoom() {
       });
     };
 
+    // 🔕 user left
     const handleUserLeft = ({ userId }) => {
       setParticipants((prev) => prev.filter((p) => p.id !== userId));
     };
@@ -58,50 +70,22 @@ export default function MeetingRoom() {
     onUserJoined(handleUserJoined);
     onUserLeft(handleUserLeft);
 
+    // 🧹 CLEANUP (listeners only)
     return () => {
-      leaveMeetingRoom({
-        meetingId,
-        userId: user.id,
-      });
-
-      offUserJoined();
-      offUserLeft();
-
-      hasJoinedRef.current = false;
+      offMeetingListeners();
     };
-  }, [meetingId, user, setParticipants]);
-
-  useEffect(() => {
-    if (!meetingId || !user) return;
-
-    setParticipants((prev) => {
-      const alreadyExists = prev.some((p) => p.id === user.id);
-      if (alreadyExists) return prev;
-
-      return [
-        ...prev,
-        {
-          id: user.id,
-          name: user.name,
-          isMe: true,
-        },
-      ];
-    });
   }, [meetingId, user, setParticipants]);
 
   return (
     <div className="h-screen bg-black flex flex-col">
-      <div className="h-14 flex items-center justify-between px-4 bg-gray-900">
+      <div className="h-14 flex items-center px-4 bg-gray-900">
         <h1 className="font-semibold">Meeting in progress</h1>
-        <button onClick={() => setShowChat(!showChat)}>💬 Chat</button>
       </div>
 
-      <div className="flex flex-1">
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 p-3 flex-1">
-          {participants.map((p) => (
-            <VideoTile key={p._id} name={p.name} isMe={p.isMe} />
-          ))}
-        </div>
+      <div className="flex-1 grid grid-cols-2 lg:grid-cols-3 gap-3 p-3">
+        {participants.map((p) => (
+          <VideoTile key={p.id} name={p.name} isMe={p.isMe} />
+        ))}
       </div>
 
       <Controls />
