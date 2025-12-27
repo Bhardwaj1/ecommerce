@@ -5,64 +5,75 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold tracking-tight">
-          Welcome back 👋
+    <div className="min-h-full px-6 py-8 bg-gradient-to-br from-[#020617] via-[#020617] to-[#020617] text-white">
+      {/* HERO */}
+      <div className="max-w-7xl mx-auto mb-12">
+        <h1 className="text-4xl font-extrabold tracking-tight">
+          Welcome back <span className="inline-block animate-pulse">👋</span>
         </h1>
-        <p className="text-gray-400 mt-1">
-          Start or join a meeting in just one click
+        <p className="text-gray-400 mt-2 text-base">
+          Start or join a meeting instantly with MeetPro
         </p>
       </div>
 
-      {/* Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Create Meeting */}
-        <div className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-500/20 backdrop-blur rounded-2xl p-6 shadow-lg hover:scale-[1.02] transition">
+      {/* ACTION CARDS */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* PRIMARY – CREATE */}
+        <div className="relative rounded-3xl p-7 bg-gradient-to-br from-cyan-500 to-blue-600 shadow-[0_20px_60px_-15px_rgba(56,189,248,0.6)] hover:scale-[1.03] transition">
           <h2 className="text-xl font-semibold mb-2">🎥 New Meeting</h2>
-          <p className="text-gray-300 mb-6">
-            Start an instant meeting and invite others
+          <p className="text-white/80 mb-8 text-sm">
+            Start an instant meeting and invite participants
           </p>
-          <Button className="w-full" onClick={() => navigate("/create")}>
+
+          <Button
+            className="w-full py-4 text-base font-bold bg-white text-blue-600 hover:bg-gray-100"
+            onClick={() => navigate("/create")}
+          >
             Create Meeting
           </Button>
         </div>
 
-        {/* Join Meeting */}
-        <div className="bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-500/20 backdrop-blur rounded-2xl p-6 shadow-lg hover:scale-[1.02] transition">
+        {/* JOIN */}
+        <div className="rounded-3xl p-7 bg-white/5 backdrop-blur border border-white/10 shadow-lg hover:border-cyan-400/40 transition">
           <h2 className="text-xl font-semibold mb-2">🔗 Join Meeting</h2>
-          <p className="text-gray-300 mb-6">
-            Join a meeting using a meeting ID
+          <p className="text-gray-400 mb-8 text-sm">
+            Join using a meeting ID shared with you
           </p>
+
           <Button
-            className="w-full bg-green-600 hover:bg-green-700"
+            className="w-full py-4 text-base font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:opacity-90"
             onClick={() => navigate("/join")}
           >
             Join Meeting
           </Button>
         </div>
 
-        {/* History (Future-ready) */}
-        <div className="bg-gray-800/70 border border-gray-700 backdrop-blur rounded-2xl p-6 shadow-lg opacity-80">
+        {/* HISTORY */}
+        <div className="rounded-3xl p-7 bg-white/5 border border-white/10 opacity-60">
           <h2 className="text-xl font-semibold mb-2">📁 Meeting History</h2>
-          <p className="text-gray-400 mb-6">
+          <p className="text-gray-400 mb-8 text-sm">
             View your past meetings (coming soon)
           </p>
-          <Button className="w-full cursor-not-allowed opacity-60" disabled>
+
+          <Button
+            className="w-full py-4 cursor-not-allowed opacity-60"
+            disabled
+          >
             View History
           </Button>
         </div>
       </div>
 
-      {/* Quick Tips */}
-      <div className="mt-10 bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-        <h3 className="text-lg font-semibold mb-2">💡 Quick Tips</h3>
-        <ul className="text-gray-400 text-sm space-y-1">
-          <li>• Allow camera & microphone permissions</li>
-          <li>• Use headphones for better audio quality</li>
-          <li>• Share the meeting link to invite others</li>
-        </ul>
+      {/* QUICK TIPS */}
+      <div className="max-w-7xl mx-auto mt-14">
+        <div className="rounded-3xl bg-white/5 backdrop-blur border border-white/10 p-6">
+          <h3 className="text-lg font-semibold mb-4">💡 Quick Tips</h3>
+          <ul className="text-gray-400 text-sm space-y-2">
+            <li>• Allow camera & microphone permissions</li>
+            <li>• Use headphones for better audio quality</li>
+            <li>• Share meeting link to invite others</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

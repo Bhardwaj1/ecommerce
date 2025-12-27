@@ -2,14 +2,12 @@ import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createMeeting, joinMeeting } from "../store/slices/meetingSlice";
-// import { useAuth } from "../context/AuthContext";
 import Button from "../components/common/Button";
 import { Notify } from "../utils/notify";
 
 export default function CreateMeeting() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // const { user } = useAuth();
   const hasJoinedRef = useRef(false);
 
   const { loading, meetingId, currentMeeting } = useSelector(
@@ -23,26 +21,73 @@ export default function CreateMeeting() {
   // Step 1: Join meeting after creation
   useEffect(() => {
     if (meetingId) {
-      dispatch(joinMeeting( meetingId ));
+      dispatch(joinMeeting(meetingId));
     }
   }, [meetingId, dispatch]);
 
   // Step 2: Navigate AFTER backend confirms join
   useEffect(() => {
     if (currentMeeting?.meetingId && meetingId && !hasJoinedRef.current) {
-      hasJoinedRef.current = true; // 🔒 guard
+      hasJoinedRef.current = true;
       Notify("Meeting joined successfully", "success");
       navigate(`/meeting/${meetingId}`);
     }
   }, [currentMeeting, meetingId, navigate]);
 
   return (
-    <Button
-      onClick={handleCreateMeeting}
-      loading={loading}
-      className="w-full py-3"
-    >
-      🚀 Create & Join Meeting
-    </Button>
+    <div className="min-h-full flex items-center justify-center px-6 py-12 bg-[#020617] text-white">
+      <div className="max-w-xl w-full">
+        {/* Card */}
+        <div className="relative rounded-3xl bg-white/5 backdrop-blur border border-white/10 p-8 shadow-2xl">
+          {/* Glow */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 to-blue-600/30 blur-2xl rounded-3xl -z-10"></div>
+
+          {/* Header */}
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+            🚀 Start an Instant Meeting
+          </h1>
+          <p className="text-gray-400 mb-8 text-sm">
+            Create a secure meeting room instantly and invite others to join.
+            No scheduling required.
+          </p>
+
+          {/* Info Points */}
+          <div className="space-y-3 mb-8 text-sm text-gray-300">
+            <div className="flex items-center gap-2">
+              ✅ <span>Instant meeting room creation</span>
+            </div>
+            <div className="flex items-center gap-2">
+              🔒 <span>Secure & private meeting ID</span>
+            </div>
+            <div className="flex items-center gap-2">
+              🎥 <span>Audio & video enabled by default</span>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <Button
+            onClick={handleCreateMeeting}
+            loading={loading}
+            className="
+              w-full
+              py-4
+              text-base
+              font-bold
+              bg-gradient-to-r from-cyan-500 to-blue-600
+              hover:opacity-90
+              active:scale-[0.98]
+              transition
+            "
+          >
+            {loading ? "Creating meeting..." : "Create & Join Meeting"}
+          </Button>
+
+          {/* Footer hint */}
+          <p className="text-xs text-gray-400 mt-4 text-center">
+            You’ll be redirected automatically after the meeting is created.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

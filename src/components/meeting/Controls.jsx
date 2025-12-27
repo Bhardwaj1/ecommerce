@@ -10,7 +10,6 @@ export default function Controls() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { leaveSession } = useMeeting();
-
   const { meetingId, loading } = useSelector((state) => state.meeting);
 
   const handleLeaveMeeting = async () => {
@@ -20,21 +19,14 @@ export default function Controls() {
     if (!confirmLeave) return;
 
     try {
-      // 🔥 SOCKET EVENT FIRST
-      leaveMeetingRoom(meetingId); // <-- this triggers the "⬅️ Leaving meeting room" log
+      leaveMeetingRoom(meetingId);
 
-      // 1️⃣ Inform backend (REST API)
       if (meetingId) {
         await dispatch(leaveMeeting({ meetingId })).unwrap();
       }
 
-      // 2️⃣ Cleanup local media + participants
       leaveSession();
-
-      // 3️⃣ Notify UI
       Notify("You left the meeting", "success");
-
-      // 4️⃣ Redirect
       navigate("/", { replace: true });
     } catch (error) {
       Notify(error || "Failed to leave meeting", "error");
@@ -42,17 +34,46 @@ export default function Controls() {
   };
 
   return (
-    <div className="flex justify-center gap-4 p-4 bg-gray-800">
-      <Button>Mic</Button>
-      <Button>Camera</Button>
+    <div className="flex justify-center">
+      <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 backdrop-blur border border-white/10 shadow-lg">
+        {/* Mic */}
+        <button
+          className="
+            px-4 py-2 rounded-lg
+            bg-indigo-600/90 hover:bg-indigo-600
+            text-sm font-medium
+            transition
+          "
+        >
+          🎤 Mic
+        </button>
 
-      <Button
-        onClick={handleLeaveMeeting}
-        disabled={loading}
-        className="bg-red-600 hover:bg-red-700"
-      >
-        Leave
-      </Button>
+        {/* Camera */}
+        <button
+          className="
+            px-4 py-2 rounded-lg
+            bg-purple-600/90 hover:bg-purple-600
+            text-sm font-medium
+            transition
+          "
+        >
+          📷 Camera
+        </button>
+
+        {/* Leave */}
+        <button
+          onClick={handleLeaveMeeting}
+          disabled={loading}
+          className="
+            px-4 py-2 rounded-lg
+            bg-red-600 hover:bg-red-700
+            text-sm font-medium
+            transition
+          "
+        >
+          Leave
+        </button>
+      </div>
     </div>
   );
 }

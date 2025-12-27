@@ -6,22 +6,31 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout(); // clears user from context and localStorage
-    navigate("/login"); // redirect to login page
+    logout();
+    navigate("/login");
   };
 
   return (
-    <nav className="flex justify-between items-center px-6 py-4 bg-gray-800">
-      <Link to="/" className="text-xl font-bold text-white">
-        MeetPro
+    <nav className="flex justify-between items-center px-6 py-4 bg-white/10 backdrop-blur-xl border-b border-white/10">
+      {/* Logo */}
+      <Link to="/" className="text-xl font-extrabold tracking-tight text-white">
+        Meet<span className="text-cyan-400">Pro</span>
       </Link>
-      <div className="flex gap-4">
-        <Link to="/" className="hover:text-blue-400 text-white">
+
+      {/* Right Actions */}
+      <div className="flex items-center gap-6 text-sm">
+        <Link to="/" className="text-gray-300 hover:text-cyan-400 transition">
           Dashboard
         </Link>
+
         <button
           onClick={handleLogout}
-          className="hover:text-blue-400 text-white"
+          className="
+            text-gray-300
+            hover:text-red-400
+            transition
+            font-medium
+          "
         >
           Logout
         </button>

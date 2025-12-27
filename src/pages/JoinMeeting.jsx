@@ -17,52 +17,63 @@ export default function JoinMeeting() {
 
     try {
       setLoading(true);
-
-      // ✅ CORRECT WAY
       await dispatch(joinMeeting(meetingId.trim())).unwrap();
-
       navigate(`/meeting/${meetingId.trim()}`);
     } catch (err) {
-      toast.error(
-        err?.message || "Unable to join meeting"
-      );
+      toast.error(err?.message || "Unable to join meeting");
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black px-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight">
-            Join a <span className="text-green-500">Meeting</span>
+    <div className="min-h-full flex items-center justify-center px-6 py-12 bg-[#020617] text-white">
+      <div className="max-w-xl w-full">
+        {/* Card */}
+        <div className="relative rounded-3xl bg-white/5 backdrop-blur border border-white/10 p-8 shadow-2xl">
+          {/* Glow */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/30 to-indigo-600/30 blur-2xl rounded-3xl -z-10"></div>
+
+          {/* Header */}
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+            🔗 Join a Meeting
           </h1>
-          <p className="text-gray-400 mt-2">
-            Enter the meeting ID shared with you
+          <p className="text-gray-400 mb-8 text-sm">
+            Enter the meeting ID shared by the host to join the meeting room.
           </p>
+
+          {/* Input */}
+          <div className="space-y-4">
+            <Input
+              placeholder="Enter Meeting ID"
+              value={meetingId}
+              onChange={(e) => setMeetingId(e.target.value)}
+            />
+
+            <Button
+              disabled={loading}
+              onClick={handleJoinMeeting}
+              className="
+                w-full
+                py-4
+                text-base
+                font-bold
+                bg-gradient-to-r from-purple-500 to-indigo-600
+                hover:opacity-90
+                active:scale-[0.98]
+                transition
+              "
+            >
+              {loading ? "Joining meeting..." : "Join Meeting"}
+            </Button>
+          </div>
+
+          {/* Helper text */}
+          <div className="mt-6 text-xs text-gray-400 space-y-2">
+            <p>• Make sure your camera & microphone permissions are enabled</p>
+            <p>• Check the meeting ID carefully before joining</p>
+          </div>
         </div>
-
-        <div className="space-y-4">
-          <Input
-            placeholder="Meeting ID"
-            value={meetingId}
-            onChange={(e) => setMeetingId(e.target.value)}
-          />
-
-          <Button
-            disabled={loading}
-            className="w-full py-2.5 text-base font-semibold rounded-xl bg-green-600 hover:bg-green-700"
-            onClick={handleJoinMeeting}
-          >
-            {loading ? "Joining..." : "🔗 Join Meeting"}
-          </Button>
-        </div>
-
-        <p className="text-center text-sm text-gray-400 mt-6">
-          Make sure your camera and microphone are ready
-        </p>
       </div>
     </div>
   );

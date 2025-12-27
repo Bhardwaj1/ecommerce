@@ -66,7 +66,14 @@ export default function MeetingRoom() {
       setParticipants((prev) =>
         prev.some((p) => p.id === joinedUser.id)
           ? prev
-          : [...prev, { ...joinedUser, isMuted: false, isMe: joinedUser.id === user.id }]
+          : [
+              ...prev,
+              {
+                ...joinedUser,
+                isMuted: false,
+                isMe: joinedUser.id === user.id,
+              },
+            ]
       );
     };
 
@@ -106,25 +113,46 @@ export default function MeetingRoom() {
      UI
   ================================ */
   return (
-    <div className="h-screen bg-gray-900 text-white flex flex-col">
-      <div className="h-14 flex items-center px-4 bg-gray-800 border-b border-gray-700">
-        <h1 className="font-semibold">Meeting in progress</h1>
+    <div className="h-screen flex flex-col bg-[#020617] text-white">
+      {/* TOP BAR */}
+      <div className="h-14 flex items-center justify-between px-6 bg-white/5 backdrop-blur border-b border-white/10">
+        <h1 className="font-semibold tracking-wide">🎥 Meeting in progress</h1>
+
+        <span className="text-xs text-gray-400">ID: {meetingId}</span>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-        {participants.map((p) => (
-          <VideoTile
-            key={p.id}
-            name={p.name}
-            isMe={p.isMe}
-            isMuted={p.isMuted}
-            onMute={() => hostMuteUser(meetingId, p.id)}
-            onUnmute={() => hostUnmuteUser(meetingId, p.id)}
-          />
-        ))}
+      {/* VIDEO GRID */}
+      <div className="flex-1 p-6 overflow-y-auto">
+        <div
+          className="
+          grid gap-6
+          grid-cols-1
+          sm:grid-cols-2
+          lg:grid-cols-3
+          xl:grid-cols-4
+        "
+        >
+          {participants.map((p) => (
+            <VideoTile
+              key={p.id}
+              name={p.name}
+              isMe={p.isMe}
+              isMuted={p.isMuted}
+              onMute={() => hostMuteUser(meetingId, p.id)}
+              onUnmute={() => hostUnmuteUser(meetingId, p.id)}
+            />
+          ))}
+        </div>
       </div>
 
-      <Controls />
+      {/* CONTROLS BAR */}
+      <div className="sticky bottom-0 z-40">
+        <div className="mx-auto max-w-3xl px-6 pb-6">
+          <div className="rounded-2xl bg-white/10 backdrop-blur border border-white/10 shadow-xl">
+            <Controls />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

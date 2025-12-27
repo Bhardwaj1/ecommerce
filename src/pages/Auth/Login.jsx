@@ -53,81 +53,105 @@ export default function Login() {
   }, [success, reduxUser, token, login, navigate, dispatch]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black px-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight">
-            Meet<span className="text-blue-500">Pro</span>
-          </h1>
-          <p className="text-gray-400 mt-2">
-            Sign in to start or join meetings
-          </p>
-        </div>
-        <div className="space-y-4">
-          <Input
-            placeholder="Email address"
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-          />
-          <Input
-            placeholder="Password"
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-          />
-          <StarBorder
-            as="button"
-            className="custom-class"
-            color="cyan"
-            speed="5s"
-          >
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#020617] to-black px-4">
+      <div className="relative w-full max-w-md">
+        {/* Glow */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/30 to-cyan-500/30 blur-2xl rounded-3xl"></div>
+
+        {/* Card */}
+        <div className="relative bg-white/10 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl px-8 py-10 sm:px-10">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-extrabold tracking-tight text-white">
+              Meet<span className="text-cyan-400">Pro</span>
+            </h1>
+            <p className="text-gray-400 mt-2 text-sm">
+              Securely sign in to start or join meetings
+            </p>
+          </div>
+
+          {/* Form */}
+          <div className="space-y-4">
+            <Input
+              placeholder="Email address"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+            />
+            <Input
+              placeholder="Password"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+            />
+
+            {/* Primary Button */}
+            <StarBorder color="#22d3ee" speed="4s" className="w-full">
+              <button
+                onClick={handleLogin}
+                disabled={loading}
+                className="
+                            w-full
+    py-4
+    text-base
+    font-semibold
+    tracking-wide
+    rounded-xl
+    active:scale-[0.98]
+    transition-transform
+  "
+              >
+                {loading ? "Signing In..." : "Sign In"}
+              </button>
+            </StarBorder>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center my-7">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="px-3 text-xs text-gray-400 uppercase">Or</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+
+          {/* Guest Button */}
+          <StarBorder color="#6366f1" speed="6s" className="w-full">
             <button
-              // className="w-full py-2.5 text-base font-semibold rounded-xl"
-              onClick={handleLogin}
-              disabled={loading}
+              onClick={() => {
+                login({
+                  id: "demo-user-1",
+                  name: "Demo User",
+                  email: "demo@meetpro.com",
+                });
+                navigate("/");
+              }}
+              className="
+    w-full
+    py-4
+    text-sm
+    font-medium
+    tracking-wide
+    rounded-xl
+    active:scale-[0.98]
+    transition-transform
+  "
             >
-              {loading ? "Signing In..." : "Sign In"}
+              Continue as Guest
             </button>
           </StarBorder>
+
+          {/* Footer */}
+          <p className="text-center text-sm text-gray-400 mt-8">
+            Don’t have an account?{" "}
+            <span
+              onClick={() => navigate("/register")}
+              className="text-cyan-400 hover:text-cyan-300 cursor-pointer font-medium"
+            >
+              Sign up
+            </span>
+          </p>
         </div>
-        <div className="flex items-center my-6">
-          <div className="flex-1 h-px bg-gray-700" />
-          <span className="px-3 text-sm text-gray-400">OR</span>
-          <div className="flex-1 h-px bg-gray-700" />
-        </div>
-        {/* Demo Guest Login */}
-        <StarBorder
-          as="button"
-          className="custom-class"
-          color="cyan"
-          speed="5s"
-        >
-          <button
-            onClick={() => {
-              login({
-                id: "demo-user-1",
-                name: "Demo User",
-                email: "demo@meetpro.com",
-              });
-              navigate("/");
-            }}
-            // className="w-full py-2.5 rounded-xl border border-gray-600 hover:border-blue-500 transition text-sm"
-          >
-            Continue as Guest
-          </button>
-        </StarBorder>
-        <p className="text-center text-sm text-gray-400 mt-6">
-          Don’t have an account?{" "}
-          <span
-            onClick={() => navigate("/register")}
-            className="text-blue-500 hover:underline cursor-pointer"
-          >
-            Sign up
-          </span>
-        </p>
       </div>
     </div>
   );
