@@ -94,7 +94,6 @@ export default function Login() {
                 disabled={loading}
                 className="
                             w-full
-    py-4
     text-base
     font-semibold
     tracking-wide
@@ -128,7 +127,6 @@ export default function Login() {
               }}
               className="
     w-full
-    py-4
     text-sm
     font-medium
     tracking-wide

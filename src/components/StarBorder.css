@@ -39,7 +39,7 @@
   color: white;
   border-radius: 14px;
   text-align: center;
-  padding: 14px 24px;
+  padding: 14px 8px;
   z-index: 1;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
