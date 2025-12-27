@@ -1,13 +1,19 @@
-export default function VideoTile({ name, isMe }) {
+export default function VideoTile({ name, isMe, isMuted, onMute, onUnmute }) {
   return (
-    <div className="relative bg-black rounded-lg overflow-hidden">
-      <div className="w-full h-full flex items-center justify-center text-gray-400">
-        {name}
-      </div>
+    <div className="relative rounded-xl bg-gray-800 p-3 text-white">
+      <p className="font-semibold">{name}</p>
 
-      <span className="absolute bottom-2 left-2 text-sm bg-gray-900 px-2 py-1 rounded">
-        {isMe ? "You" : name}
-      </span>
+      <p className="text-sm">{isMuted ? "🔇 Muted" : "🎤 Speaking"}</p>
+
+      {!isMe && (
+        <div className="absolute bottom-2 right-2">
+          {isMuted ? (
+            <button onClick={onUnmute}>Unmute</button>
+          ) : (
+            <button onClick={onMute}>Mute</button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

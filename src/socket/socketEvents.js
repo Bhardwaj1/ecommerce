@@ -33,6 +33,13 @@ export const joinMeetingRoom = ({ meetingId }) => {
 
   socket.emit("join-meeting", { meetingId });
 };
+export const hostMuteUser = (meetingId, targetUserId) => {
+  socket.emit("host-mute-user", { meetingId, targetUserId });
+};
+
+export const hostUnmuteUser = (meetingId, targetUserId) => {
+  socket.emit("host-unmute-user", { meetingId, targetUserId });
+};
 
 export const leaveMeetingRoom = (meetingId) => {
   console.log("⬅️ Leaving meeting room");

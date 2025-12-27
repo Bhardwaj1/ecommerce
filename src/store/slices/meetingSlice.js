@@ -21,9 +21,9 @@ export const createMeeting = createAsyncThunk(
 
 export const joinMeeting = createAsyncThunk(
   "meeting/join",
-  async ({ meetingId, displayName }, { rejectWithValue }) => {
+  async (meetingId, { rejectWithValue }) => {
     try {
-      return await meetingService.join({ meetingId, displayName });
+      return await meetingService.join({ meetingId });
     } catch (error) {
       return rejectWithValue(error);
     }
