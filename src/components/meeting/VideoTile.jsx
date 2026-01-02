@@ -15,6 +15,14 @@ export default function VideoTile({ name, isMe, isMuted, onMute, onUnmute }) {
         </div>
       </div>
 
+      {/* Join Indicator */}
+      <div className="absolute top-3 right-3">
+        <div className="flex items-center gap-1 px-2 py-1 bg-green-600 rounded-full text-xs font-medium">
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+          Joined
+        </div>
+      </div>
+
       {/* Bottom Info Bar */}
       <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-black/40 backdrop-blur flex items-center justify-between">
         <div>
