@@ -8,7 +8,7 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 
 createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <Provider store={store}>
     <AuthProvider>
       <MeetingProvider>
@@ -16,5 +16,5 @@ createRoot(document.getElementById("root")).render(
       </MeetingProvider>
     </AuthProvider>
     </Provider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

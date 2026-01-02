@@ -9,9 +9,17 @@ import { leaveMeetingRoom } from "../../socket/socketEvents";
 export default function Controls() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { leaveSession } = useMeeting();
+  const { leaveSession,startLocalStream } = useMeeting();
   const { meetingId, loading } = useSelector((state) => state.meeting);
 
+   const handleCameraClick = async () => {
+    try {
+      await startLocalStream();
+      console.log("📸 Camera started by USER click");
+    } catch (e) {
+      console.error("Camera error:", e);
+    }
+  };
   const handleLeaveMeeting = async () => {
     const confirmLeave = window.confirm(
       "Are you sure you want to leave the meeting?"
@@ -56,6 +64,7 @@ export default function Controls() {
             text-sm font-medium
             transition
           "
+          onClick={handleCameraClick}
         >
           📷 Camera
         </button>

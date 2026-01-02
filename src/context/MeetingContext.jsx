@@ -1,18 +1,38 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 
 const MeetingContext = createContext(null);
 
 export function MeetingProvider({ children }) {
   const [participants, setParticipants] = useState([]);
-  const [localStream, setLocalStream] = useState(null);
 
+  const localStreamRef = useRef();
+
+  const startLocalStream = async () => {
+     if (localStreamRef.current) {
+    return localStreamRef.current;
+  }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+ console.log("🎥 got local stream:", stream);
+  console.log("🎥 video tracks:", stream.getVideoTracks())
+    localStreamRef.current = stream;
+    return stream;
+  };
+
+  const stopLocalStream = () => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((t) => {
+        t.stop();
+        localStreamRef.current = null;
+      });
+    }
+  };
   const leaveSession = () => {
     setParticipants([]);
-
-    if (localStream) {
-      localStream.getTracks().forEach((t) => t.stop());
-      setLocalStream(null);
-    }
+    stopLocalStream();
   };
 
   return (
@@ -20,8 +40,9 @@ export function MeetingProvider({ children }) {
       value={{
         participants,
         setParticipants,
-        localStream,
-        setLocalStream,
+        localStreamRef,
+        startLocalStream,
+        stopLocalStream,
         leaveSession,
       }}
     >
