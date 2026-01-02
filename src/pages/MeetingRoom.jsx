@@ -14,6 +14,8 @@ import {
   onUserUnmuted,
   hostMuteUser,
   hostUnmuteUser,
+  connectSocket,
+  disconnectSocket,
 } from "../socket/socketEvents";
 
 import { fetchMeetingDetails } from "../store/slices/meetingSlice";
@@ -27,6 +29,13 @@ export default function MeetingRoom() {
   const { meetingId } = useSelector((state) => state.meeting);
   const { user } = useAuth();
   const { participants, setParticipants } = useMeeting();
+
+  useEffect(() => {
+    connectSocket();
+    return () => {
+      disconnectSocket();
+    };
+  }, []);
 
   /* ================================
      1️⃣ LOAD PARTICIPANTS (REST)

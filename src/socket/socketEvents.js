@@ -13,6 +13,10 @@ export const connectSocket = () => {
 export const onSocketConnected = (cb) => {
   socket.on("connect", () => {
     console.log("✅ Socket connected:", socket.id);
+    if (joinedMeetingId) {
+      console.log(joinedMeetingId);
+      socket.emit("join-meeting", { meetingId: joinedMeetingId });
+    }
     cb?.();
   });
 };
@@ -27,8 +31,6 @@ export const disconnectSocket = () => {
 /* ---------- MEETING EVENTS ---------- */
 export const joinMeetingRoom = ({ meetingId }) => {
   console.log("➡️ Joining meeting room:", meetingId);
-
-  if (joinedMeetingId === meetingId) return; // prevent duplicate joins
   joinedMeetingId = meetingId;
 
   socket.emit("join-meeting", { meetingId });
