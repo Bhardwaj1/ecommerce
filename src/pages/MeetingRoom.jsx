@@ -62,7 +62,6 @@ export default function MeetingRoom() {
 
     hasJoinedRef.current = true;
 
-    console.log("🔗 Joining meeting:", meetingId);
 
 
 
