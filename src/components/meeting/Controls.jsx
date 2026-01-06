@@ -1,30 +1,57 @@
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import Button from "../common/Button";
 import { leaveMeeting } from "../../store/slices/meetingSlice";
 import { useMeeting } from "../../context/MeetingContext";
 import { Notify } from "../../utils/notify";
 import { leaveMeetingRoom } from "../../socket/socketEvents";
+import { Mic, MicOff, Video, VideoOff, PhoneOff } from "lucide-react";
 
 export default function Controls() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { leaveSession,startLocalStream } = useMeeting();
+
+  const { leaveSession, startLocalStream } = useMeeting();
   const { meetingId, loading } = useSelector((state) => state.meeting);
 
-   const handleCameraClick = async () => {
-    try {
-      await startLocalStream();
-      console.log("📸 Camera started by USER click");
-    } catch (e) {
-      console.error("Camera error:", e);
+  // ✅ UI-only states
+  const [micOn, setMicOn] = useState(true);
+  const [cameraOn, setCameraOn] = useState(false);
+
+  /* ============================
+     MIC TOGGLE (UI ONLY)
+  ============================ */
+  const handleMicToggle = () => {
+    setMicOn((prev) => !prev);
+
+    Notify(micOn ? "Mic muted (UI only)" : "Mic unmuted (UI only)", "info");
+  };
+
+  /* ============================
+     CAMERA TOGGLE
+  ============================ */
+  const handleCameraToggle = async () => {
+    if (!cameraOn) {
+      try {
+        await startLocalStream(); // 🔥 only when turning ON
+        setCameraOn(true);
+        Notify("Camera ON", "success");
+      } catch (e) {
+        console.error("Camera error:", e);
+        Notify("Camera permission denied", "error");
+      }
+    } else {
+      // ❌ no stop logic yet (WebRTC baad me)
+      setCameraOn(false);
+      Notify("Camera OFF (UI only)", "info");
     }
   };
+
+  /* ============================
+     LEAVE MEETING
+  ============================ */
   const handleLeaveMeeting = async () => {
-    const confirmLeave = window.confirm(
-      "Are you sure you want to leave the meeting?"
-    );
-    if (!confirmLeave) return;
+    if (!window.confirm("Are you sure you want to leave the meeting?")) return;
 
     try {
       leaveMeetingRoom(meetingId);
@@ -37,50 +64,36 @@ export default function Controls() {
       Notify("You left the meeting", "success");
       navigate("/", { replace: true });
     } catch (error) {
-      Notify(error || "Failed to leave meeting", "error");
+      Notify("Failed to leave meeting:" + error, "error");
     }
   };
 
   return (
     <div className="flex justify-center">
       <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 backdrop-blur border border-white/10 shadow-lg">
-        {/* Mic */}
+        {/* 🎤 MIC */}
         <button
-          className="
-            px-4 py-2 rounded-lg
-            bg-indigo-600/90 hover:bg-indigo-600
-            text-sm font-medium
-            transition
-          "
+          onClick={handleMicToggle}
+          className="p-3 rounded-full bg-indigo-600 hover:bg-indigo-700 transition"
         >
-          🎤 Mic
+          {micOn ? <Mic /> : <MicOff />}
         </button>
 
-        {/* Camera */}
+        {/* 🎥 CAMERA */}
         <button
-          className="
-            px-4 py-2 rounded-lg
-            bg-purple-600/90 hover:bg-purple-600
-            text-sm font-medium
-            transition
-          "
-          onClick={handleCameraClick}
+          onClick={handleCameraToggle}
+          className="p-3 rounded-full bg-purple-600 hover:bg-purple-700 transition"
         >
-          📷 Camera
+          {cameraOn ? <Video /> : <VideoOff />}
         </button>
 
-        {/* Leave */}
+        {/* ❌ LEAVE */}
         <button
           onClick={handleLeaveMeeting}
           disabled={loading}
-          className="
-            px-4 py-2 rounded-lg
-            bg-red-600 hover:bg-red-700
-            text-sm font-medium
-            transition
-          "
+          className="p-4 rounded-full bg-red-600 hover:bg-red-700 transition"
         >
-          Leave
+          <PhoneOff />
         </button>
       </div>
     </div>

@@ -14,6 +14,7 @@ import {
 import VideoTile from "../components/meeting/VideoTile";
 import Controls from "../components/meeting/Controls";
 import { Notify } from "../utils/notify";
+import MeetingTime from "../components/meeting/MeetingTime";
 
 export default function MeetingRoom() {
   const { id: meetingId } = useParams();
@@ -97,8 +98,6 @@ export default function MeetingRoom() {
     if (!user) return;
 
     const handleMeetingState = ({ participants }) => {
-      console.log("📸 meeting-state received");
-
       // ✅ meeting officially joined
       hasJoinedRef.current = true;
       retryCountRef.current = 0;
@@ -265,9 +264,13 @@ export default function MeetingRoom() {
         </div>
       </div>
 
-      <div className="sticky bottom-0 z-40">
+      <div className="sticky bottom-0 z-40 relative">
+        {/* ⏰ TIME (LEFT SIDE) */}
+        <MeetingTime />
+
+        {/* 🎛 CONTROLS (CENTER – unchanged) */}
         <div className="mx-auto max-w-3xl px-6 pb-6">
-          <div className="rounded-2xl bg-white/10 border border-white/10 shadow-xl">
+          <div className="shadow-xl">
             <Controls />
           </div>
         </div>
