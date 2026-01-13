@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import socket from "../socket/socket";
+import { getSocket } from "../socket/socket";
 import { useAuth } from "../context/AuthContext";
 import { useMeeting } from "../context/MeetingContext";
 
@@ -19,7 +19,6 @@ import MeetingTime from "../components/meeting/MeetingTime";
 export default function MeetingRoom() {
   const { id: meetingId } = useParams();
   const { user } = useAuth();
-
   const { participants, setParticipants } = useMeeting();
 
   const hasJoinedRef = useRef(false);
@@ -31,6 +30,9 @@ export default function MeetingRoom() {
   ================================ */
   useEffect(() => {
     connectSocket();
+
+    const socket = getSocket();
+    if (!socket) return;
 
     const onConnect = () => {
       console.log("✅ Socket connected:", socket.id);
@@ -62,13 +64,12 @@ export default function MeetingRoom() {
   }, []);
 
   /* ================================
-     1️⃣ JOIN MEETING (EMIT ONLY)
+     1️⃣ JOIN MEETING
   ================================ */
   useEffect(() => {
     if (!meetingId || !user) return;
     if (hasJoinedRef.current) return;
 
-    // add self optimistically
     setParticipants([
       {
         id: user.id,
@@ -79,8 +80,10 @@ export default function MeetingRoom() {
     ]);
 
     const emitJoin = () => {
+      const socket = getSocket();
+      if (!socket) return;
+
       if (socket.connected) {
-        console.log("➡️ join-meeting emit");
         socket.emit("join-meeting", { meetingId });
       } else {
         setTimeout(emitJoin, 300);
@@ -92,13 +95,14 @@ export default function MeetingRoom() {
 
   /* ================================
      2️⃣ AUTHORITATIVE SNAPSHOT
-     (JOIN CONFIRMATION POINT)
   ================================ */
   useEffect(() => {
     if (!user) return;
 
+    const socket = getSocket();
+    if (!socket) return;
+
     const handleMeetingState = ({ participants }) => {
-      // ✅ meeting officially joined
       hasJoinedRef.current = true;
       retryCountRef.current = 0;
 
@@ -113,10 +117,7 @@ export default function MeetingRoom() {
     };
 
     socket.on("meeting-state", handleMeetingState);
-
-    return () => {
-      socket.off("meeting-state", handleMeetingState);
-    };
+    return () => socket.off("meeting-state", handleMeetingState);
   }, [user, setParticipants]);
 
   /* ================================
@@ -124,23 +125,25 @@ export default function MeetingRoom() {
   ================================ */
   useEffect(() => {
     if (!user) return;
+    const socket = getSocket();
+    if (!socket) return;
 
     const handleUserJoined = ({ user: joinedUser }) => {
       const joinedUserId = joinedUser._id || joinedUser.id;
 
-      setParticipants((prev) => {
-        if (prev.some((p) => p.id === joinedUserId)) return prev;
-
-        return [
-          ...prev,
-          {
-            id: joinedUserId,
-            name: joinedUser.name,
-            isMuted: false,
-            isMe: joinedUserId === user.id,
-          },
-        ];
-      });
+      setParticipants((prev) =>
+        prev.some((p) => p.id === joinedUserId)
+          ? prev
+          : [
+              ...prev,
+              {
+                id: joinedUserId,
+                name: joinedUser.name,
+                isMuted: false,
+                isMe: joinedUserId === user.id,
+              },
+            ]
+      );
     };
 
     const handleUserLeft = ({ userId }) => {
@@ -157,9 +160,12 @@ export default function MeetingRoom() {
   }, [user, setParticipants]);
 
   /* ================================
-     4️⃣ MUTE / UNMUTE SYNC
+     4️⃣ MUTE / UNMUTE
   ================================ */
   useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
     const handleMuted = ({ userId }) => {
       setParticipants((prev) =>
         prev.map((p) => (p.id === userId ? { ...p, isMuted: true } : p))
@@ -182,37 +188,28 @@ export default function MeetingRoom() {
   }, [setParticipants]);
 
   /* ================================
-     5️⃣ MEETING ERROR → AUTO RETRY + SAFE EXIT
+     5️⃣ MEETING ERROR
   ================================ */
   useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
     const MAX_RETRY = 3;
 
     const handleMeetingError = (error) => {
-      console.warn("⚠️ meeting-error:", error);
-
       if (hasJoinedRef.current) return;
 
       if (retryCountRef.current < MAX_RETRY) {
         retryCountRef.current += 1;
-
-        Notify(
-          `Meeting issue. Retrying ${retryCountRef.current}/${MAX_RETRY}`,
-          "warning"
-        );
+        Notify(`Retry ${retryCountRef.current}/${MAX_RETRY}`, "warning");
 
         retryTimerRef.current = setTimeout(() => {
-          if (socket.connected) {
-            socket.emit("join-meeting", { meetingId });
-          }
+          socket.emit("join-meeting", { meetingId });
         }, 1000);
       } else {
-        Notify("Meeting unavailable. Redirecting safely…", "error");
-
+        Notify("Meeting unavailable. Redirecting…", "error");
         socket.emit("leave-meeting", { meetingId });
-
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 1200);
+        setTimeout(() => (window.location.href = "/"), 1200);
       }
     };
 
@@ -220,14 +217,12 @@ export default function MeetingRoom() {
 
     return () => {
       socket.off("meeting-error", handleMeetingError);
-      if (retryTimerRef.current) {
-        clearTimeout(retryTimerRef.current);
-      }
+      clearTimeout(retryTimerRef.current);
     };
   }, [meetingId]);
 
   /* ================================
-     GUARD
+     UI
   ================================ */
   if (!user) {
     return (

@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { logoutUser } from "../services/authService";
+import { getSocket, initSocket } from "../socket/socket";
 
 const AuthContext = createContext();
 
@@ -28,6 +29,7 @@ export function AuthProvider({ children }) {
 
     setUser(userData);
     setAccessToken(authToken);
+    initSocket(authToken);
   }, []);
 
   const logout = useCallback(async () => {
@@ -41,6 +43,8 @@ export function AuthProvider({ children }) {
     }
     setUser(null);
     setAccessToken(null);
+    const socket = getSocket();
+    socket?.disconnect();
   }, []);
 
   return (

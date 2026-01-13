@@ -2,11 +2,17 @@ import { io } from "socket.io-client";
 
 const SOCKET_URL = "http://localhost:8000";
 
-const socket = io(SOCKET_URL, {
+let socket;
+
+export const initSocket=(accessToken)=>{
+  socket = io(SOCKET_URL, {
   autoConnect: false,
+  withCredentials:true,
   auth: {
-    token: localStorage.getItem("token"), // 🔐 JWT
+    accessToken
   },
 });
+}
 
-export default socket;
+
+export const getSocket=()=> socket;

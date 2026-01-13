@@ -48,19 +48,6 @@ export default function Login() {
     if (error) Notify(error, "error");
   }, [error]);
 
-  // // ✅ Login Success
-  // useEffect(() => {
-  //   if (success && reduxUser && accessToken) {
-  //     Notify("Login successful", "success");
-  //     login(reduxUser, accessToken);
-
-  //     setTimeout(() => {
-  //       navigate("/", { replace: true });
-  //     }, 300);
-
-  //     dispatch(resetAuthState());
-  //   }
-  // }, [success, reduxUser, accessToken, login, navigate, dispatch]);
 
   useEffect(() => {
     if (success && reduxUser && accessToken) {
@@ -70,8 +57,11 @@ export default function Login() {
       login(reduxUser, accessToken);
 
       dispatch(resetAuthState());
+      
+      // Navigate to dashboard after successful login
+      navigate("/", { replace: true });
     }
-  }, [success, reduxUser, accessToken, login, dispatch]);
+  }, [success, reduxUser, accessToken, login, dispatch, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#020617] to-black px-4">
