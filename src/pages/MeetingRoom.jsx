@@ -27,6 +27,8 @@ export default function MeetingRoom() {
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef(null);
 
+  console.log("🟢 MeetingRoom mounted");
+
   /* ================================
      0️⃣ SOCKET CONNECT / DISCONNECT
   ================================ */
@@ -64,6 +66,38 @@ export default function MeetingRoom() {
       disconnectSocket();
     };
   }, []);
+
+  /* ================================
+     1️⃣ REQUEST JOIN (ENTRY POINT)
+     ⛔ NO join-meeting here
+  ================================ */
+  useEffect(() => {
+    console.log("🟡 request-join effect fired");
+    console.log("🧩 meetingId:", meetingId);
+    console.log("🧩 user:", user);
+
+    if (!meetingId || !user) {
+      console.log("🚫 meetingId or user not found");
+      return;
+    }
+    if (hasJoinedRef.current) return;
+
+    const socket = getSocket();
+
+    console.log({socket})
+    if (!socket) return;
+
+    const emitRequest = () => {
+      console.log("🚀 emitting request-join", meetingId);
+      if (socket.connected) {
+        socket.emit("request-join", { meetingId });
+      } else {
+        setTimeout(emitRequest, 300);
+      }
+    };
+
+    emitRequest();
+  }, [meetingId, user]);
 
   /* ================================
      1️⃣ JOIN MEETING

@@ -30,9 +30,9 @@ const JoinRequestModal = ({ meetingId, isHost }) => {
       Notify(`${name} want to join`, "info");
     };
 
-    socket.on("join-request", handleJoinRequest);
+    socket.on("join-requested", handleJoinRequest);
     return () => {
-      socket.off("join-request", handleJoinRequest);
+      socket.off("join-requested", handleJoinRequest);
     };
   }, [isHost]);
 
