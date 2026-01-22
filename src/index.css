@@ -136,3 +136,18 @@
 .animate-join {
   animation: joinIn 0.45s ease-out;
 }
+
+@keyframes joinFade {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-join {
+  animation: joinFade 0.4s ease-out;
+}

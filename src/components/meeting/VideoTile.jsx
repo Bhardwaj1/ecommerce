@@ -33,7 +33,7 @@ export default function VideoTile({ name, isMe, isMuted, animate }) {
   return (
     <div
       className={`
-    relative aspect-video rounded-2xl bg-black
+    relative w-full h-full rounded-2xl bg-black
     border border-white/10 overflow-hidden
     transition-all duration-500 ease-out
     ${animate ? "scale-100 opacity-100" : "opacity-90"}

@@ -27,7 +27,7 @@ export default function MeetingRoom() {
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef(null);
 
-  console.log("🟢 MeetingRoom mounted");
+  console.log("🟢 MeetingRoom mounted",participants);
 
   /* ================================
      0️⃣ SOCKET CONNECT / DISCONNECT
@@ -84,7 +84,7 @@ export default function MeetingRoom() {
 
     const socket = getSocket();
 
-    console.log({socket})
+    console.log({ socket });
     if (!socket) return;
 
     const emitRequest = () => {
@@ -149,7 +149,7 @@ export default function MeetingRoom() {
           role: p.role, // ✅ ADD THIS
           isMuted: p.isMuted,
           isMe: p.id === user.id,
-        }))
+        })),
       );
     };
 
@@ -163,6 +163,7 @@ export default function MeetingRoom() {
   useEffect(() => {
     if (!user) return;
     const socket = getSocket();
+    console.log({socket})
     if (!socket) return;
 
     const handleUserJoined = ({ user: joinedUser }) => {
@@ -179,7 +180,7 @@ export default function MeetingRoom() {
                 isMuted: false,
                 isMe: joinedUserId === user.id,
               },
-            ]
+            ],
       );
       // reset after animation duration
       setTimeout(() => setRecentJoin(null), 800);
@@ -207,13 +208,13 @@ export default function MeetingRoom() {
 
     const handleMuted = ({ userId }) => {
       setParticipants((prev) =>
-        prev.map((p) => (p.id === userId ? { ...p, isMuted: true } : p))
+        prev.map((p) => (p.id === userId ? { ...p, isMuted: true } : p)),
       );
     };
 
     const handleUnmuted = ({ userId }) => {
       setParticipants((prev) =>
-        prev.map((p) => (p.id === userId ? { ...p, isMuted: false } : p))
+        prev.map((p) => (p.id === userId ? { ...p, isMuted: false } : p)),
       );
     };
 
@@ -261,7 +262,13 @@ export default function MeetingRoom() {
   }, [meetingId]);
   const isHost = participants.some((p) => p.isMe && p.role === "HOST");
 
-  console.log(isHost);
+  const getGridLayout = (count) => {
+    if (count === 1) return "grid-cols-1";
+    if (count === 2) return "grid-cols-2";
+    if (count <= 4) return "grid-cols-2";
+    if (count <= 6) return "grid-cols-3";
+    return "grid-cols-4";
+  };
   /* ================================
      UI
   ================================ */
@@ -290,8 +297,16 @@ export default function MeetingRoom() {
       </div>
 
       {/* VIDEO GRID */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="flex-1 p-4 overflow-hidden">
+        <div
+          className={`
+    grid gap-4 h-full
+    ${getGridLayout(participants.length)}
+  `}
+          style={{
+            gridAutoRows: "1fr",
+          }}
+        >
           {participants.map((p) => (
             <VideoTile
               key={p.id}
