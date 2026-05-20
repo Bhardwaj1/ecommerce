@@ -1,0 +1,76 @@
+export const initialCategories = [
+  {
+    id: 1,
+    name: "Whisky",
+    emoji: "🥃",
+    description: "Single malts, blends, bourbon and more",
+    active: true,
+    subcategories: [
+      { id: 101, name: "Single Malt Whisky", active: true },
+      { id: 102, name: "Blended Whisky", active: true },
+      { id: 103, name: "Tennessee Whiskey", active: true },
+      { id: 104, name: "Bourbon", active: true },
+      { id: 105, name: "Japanese Whisky", active: false },
+    ],
+  },
+  {
+    id: 2,
+    name: "Beer",
+    emoji: "🍺",
+    description: "Lagers, ales, craft beers and stouts",
+    active: true,
+    subcategories: [
+      { id: 201, name: "Premium Beer", active: true },
+      { id: 202, name: "Craft Beer", active: true },
+      { id: 203, name: "Stout", active: true },
+      { id: 204, name: "Wheat Beer", active: false },
+    ],
+  },
+  {
+    id: 3,
+    name: "Wine",
+    emoji: "🍷",
+    description: "Red, white, rosé and sparkling wines",
+    active: true,
+    subcategories: [
+      { id: 301, name: "Red Wine", active: true },
+      { id: 302, name: "White Wine", active: true },
+      { id: 303, name: "Sparkling Wine", active: true },
+      { id: 304, name: "Rosé Wine", active: false },
+    ],
+  },
+  {
+    id: 4,
+    name: "Vodka",
+    emoji: "🍸",
+    description: "Premium and flavoured vodkas",
+    active: true,
+    subcategories: [
+      { id: 401, name: "Premium Vodka", active: true },
+      { id: 402, name: "Flavoured Vodka", active: true },
+    ],
+  },
+  {
+    id: 5,
+    name: "Rum",
+    emoji: "🍹",
+    description: "Dark, white and spiced rums",
+    active: true,
+    subcategories: [
+      { id: 501, name: "Dark Rum", active: true },
+      { id: 502, name: "White Rum", active: true },
+      { id: 503, name: "Spiced Rum", active: false },
+    ],
+  },
+  {
+    id: 6,
+    name: "Gin",
+    emoji: "🫗",
+    description: "London dry, craft and flavoured gins",
+    active: false,
+    subcategories: [
+      { id: 601, name: "London Dry Gin", active: true },
+      { id: 602, name: "Craft Gin", active: true },
+    ],
+  },
+];

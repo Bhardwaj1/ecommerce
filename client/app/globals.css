@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --gold-dark: #a07830;
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(201, 168, 76, 0.2);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.gold-text {
+  color: var(--gold);
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gold-btn {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  color: #09090b;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.gold-btn:hover {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(201, 168, 76, 0.35);
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-6px);
+  border-color: var(--gold);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(201, 168, 76, 0.1);
+}
