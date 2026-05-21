@@ -6,8 +6,11 @@ import { useAdmin } from "../../../../context/AdminContext";
 
 export default function CategoryDetailPage({ params }) {
   const { id } = use(params);
-  const { categories, toggleCategory, toggleSubcategory } = useAdmin();
-  const category = categories.find((c) => c.id === Number(id));
+  const { categories, categoriesLoading, toggleCategory, toggleSubcategory } = useAdmin();
+
+  if (categoriesLoading) return <div className="p-8 text-zinc-400">Loading...</div>;
+
+  const category = categories.find((c) => c._id === id);
 
   if (!category) {
     return (
@@ -59,7 +62,7 @@ export default function CategoryDetailPage({ params }) {
           </div>
           <p className="text-zinc-500 text-sm mb-3">{category.description}</p>
           <button
-            onClick={() => toggleCategory(category.id)}
+            onClick={() => toggleCategory(category._id)}
             className="text-xs px-4 py-1.5 rounded-lg font-semibold transition-all"
             style={{
               background: category.active ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)",
@@ -118,7 +121,7 @@ export default function CategoryDetailPage({ params }) {
               >
                 <p className="text-white text-sm font-medium">{sub.name}</p>
                 <button
-                  onClick={() => toggleSubcategory(category.id, sub.id)}
+                  onClick={() => toggleSubcategory(category._id, sub._id || sub.id)}
                   className="text-xs px-3 py-1 rounded-full font-semibold transition-all"
                   style={{
                     background: sub.active ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",

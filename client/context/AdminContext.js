@@ -1,19 +1,27 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { products as initialProducts } from "../lib/products";
-import { initialCategories } from "../lib/categories";
+import { categoryAPI } from "../lib/api";
 
 const AdminContext = createContext(null);
 
-// inStock is always derived — never stored separately
 function withInStock(product) {
   return { ...product, inStock: product.stockQty > 0 };
 }
 
 export function AdminProvider({ children }) {
   const [products, setProducts] = useState(initialProducts.map(withInStock));
-  const [categories, setCategories] = useState(initialCategories);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(null);
+
+  useEffect(() => {
+    categoryAPI.getAll()
+      .then((res) => setCategories(res.data))
+      .catch((err) => setCategoriesError(err.message))
+      .finally(() => setCategoriesLoading(false));
+  }, []);
 
   // ── Product CRUD ──────────────────────────────────────────
   function addProduct(data) {
@@ -39,17 +47,22 @@ export function AdminProvider({ children }) {
   }
 
   // ── Category CRUD ─────────────────────────────────────────
-  function addCategory(data) {
-    setCategories((prev) => [{ ...data, id: Date.now(), subcategories: [] }, ...prev]);
+  async function addCategory(data) {
+    const res = await categoryAPI.add(data);
+    setCategories((prev) => [res.category, ...prev]);
   }
-  function editCategory(id, data) {
-    setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, ...data } : c)));
+  async function editCategory(id, data) {
+    const res = await categoryAPI.update(id, data);
+    setCategories((prev) => prev.map((c) => (c._id === id ? res.category : c)));
   }
-  function deleteCategory(id) {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
+  async function deleteCategory(id) {
+    await categoryAPI.delete(id);
+    setCategories((prev) => prev.filter((c) => c._id !== id));
   }
-  function toggleCategory(id) {
-    setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, active: !c.active } : c)));
+  async function toggleCategory(id) {
+    const cat = categories.find((c) => c._id === id);
+    const res = await categoryAPI.update(id, { active: !cat.active });
+    setCategories((prev) => prev.map((c) => (c._id === id ? res.category : c)));
   }
 
   // ── Subcategory CRUD ──────────────────────────────────────
@@ -93,7 +106,8 @@ export function AdminProvider({ children }) {
   return (
     <AdminContext.Provider value={{
       products, addProduct, editProduct, deleteProduct, updateStock,
-      categories, addCategory, editCategory, deleteCategory, toggleCategory,
+      categories, categoriesLoading, categoriesError,
+      addCategory, editCategory, deleteCategory, toggleCategory,
       addSubcategory, editSubcategory, deleteSubcategory, toggleSubcategory,
     }}>
       {children}

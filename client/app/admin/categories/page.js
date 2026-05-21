@@ -145,12 +145,15 @@ function EditCategoryModal({ category, onClose, onEdit }) {
 }
 
 export default function CategoriesPage() {
-  const { categories, addCategory, editCategory, deleteCategory, toggleCategory } = useAdmin();
+  const { categories, categoriesLoading, categoriesError, addCategory, editCategory, deleteCategory, toggleCategory } = useAdmin();
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
 
   const totalActive = categories.filter((c) => c.active).length;
-  const totalSubs = categories.reduce((sum, c) => sum + c.subcategories.length, 0);
+  const totalSubs = categories.reduce((sum, c) => sum + (c.subcategories?.length || 0), 0);
+
+  if (categoriesLoading) return <div className="p-8 text-zinc-400">Loading categories...</div>;
+  if (categoriesError) return <div className="p-8 text-red-400">Error: {categoriesError}</div>;
 
   return (
     <div className="p-8">
@@ -182,10 +185,10 @@ export default function CategoriesPage() {
       {/* Category Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
         {categories.map((cat) => {
-          const activeSubs = cat.subcategories.filter((s) => s.active).length;
+          const activeSubs = (cat.subcategories || []).filter((s) => s.active).length;
           return (
             <div
-              key={cat.id}
+              key={cat._id}
               className="glass rounded-2xl overflow-hidden flex flex-col transition-all"
               style={{ opacity: cat.active ? 1 : 0.55 }}
             >
@@ -218,7 +221,7 @@ export default function CategoriesPage() {
               <div className="px-5 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-4 text-sm">
                   <span className="text-zinc-400">
-                    <span className="text-white font-medium">{cat.subcategories.length}</span> subcategories
+                    <span className="text-white font-medium">{(cat.subcategories || []).length}</span> subcategories
                   </span>
                   <span className="text-zinc-600">·</span>
                   <span className="text-zinc-400">
@@ -226,7 +229,7 @@ export default function CategoriesPage() {
                   </span>
                 </div>
                 <Link
-                  href={`/admin/categories/${cat.id}`}
+                  href={`/admin/categories/${cat._id}`}
                   className="text-xs gold-text hover:text-yellow-300 transition-colors font-medium"
                 >
                   Manage →
@@ -236,7 +239,7 @@ export default function CategoriesPage() {
               {/* Actions */}
               <div className="px-5 pb-5 flex items-center gap-2">
                 <button
-                  onClick={() => toggleCategory(cat.id)}
+                  onClick={() => toggleCategory(cat._id)}
                   className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
                   style={{
                     background: cat.active ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)",
@@ -247,13 +250,13 @@ export default function CategoriesPage() {
                   {cat.active ? "Deactivate" : "Activate"}
                 </button>
                 <button
-                  onClick={() => setEditTarget(cat)}
+                  onClick={() => setEditTarget({ ...cat, id: cat._id })}
                   className="flex-1 py-2 rounded-xl text-xs font-semibold glass text-zinc-300 hover:text-white transition-colors"
                 >
                   Edit
                 </button>
                 <button
-                  onClick={() => { if (confirm(`Delete "${cat.name}"?`)) deleteCategory(cat.id); }}
+                  onClick={() => { if (confirm(`Delete "${cat.name}"?`)) deleteCategory(cat._id); }}
                   className="py-2 px-3 rounded-xl text-xs font-semibold transition-colors"
                   style={{ background: "rgba(239,68,68,0.05)", color: "#f87171", border: "1px solid rgba(239,68,68,0.15)" }}
                 >
