@@ -50,7 +50,7 @@ const updateCategory = async (req, res) => {
   try {
     let { id } = req.params;
     let updatedCategory = await Category.findByIdAndUpdate(id, req.body, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     });
 

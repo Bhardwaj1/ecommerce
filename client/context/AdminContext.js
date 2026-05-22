@@ -12,16 +12,7 @@ function withInStock(product) {
 
 export function AdminProvider({ children }) {
   const [products, setProducts] = useState(initialProducts.map(withInStock));
-  const [categories, setCategories] = useState([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [categoriesError, setCategoriesError] = useState(null);
-
-  useEffect(() => {
-    categoryAPI.getAll()
-      .then((res) => setCategories(res.data))
-      .catch((err) => setCategoriesError(err.message))
-      .finally(() => setCategoriesLoading(false));
-  }, []);
+  // categories state is now managed per-page via useCategoryTable hook
 
   // ── Product CRUD ──────────────────────────────────────────
   function addProduct(data) {
@@ -46,24 +37,11 @@ export function AdminProvider({ children }) {
     );
   }
 
-  // ── Category CRUD ─────────────────────────────────────────
-  async function addCategory(data) {
-    const res = await categoryAPI.add(data);
-    setCategories((prev) => [res.category, ...prev]);
-  }
-  async function editCategory(id, data) {
-    const res = await categoryAPI.update(id, data);
-    setCategories((prev) => prev.map((c) => (c._id === id ? res.category : c)));
-  }
-  async function deleteCategory(id) {
-    await categoryAPI.delete(id);
-    setCategories((prev) => prev.filter((c) => c._id !== id));
-  }
-  async function toggleCategory(id) {
-    const cat = categories.find((c) => c._id === id);
-    const res = await categoryAPI.update(id, { active: !cat.active });
-    setCategories((prev) => prev.map((c) => (c._id === id ? res.category : c)));
-  }
+  // ── Category CRUD (raw API calls — state managed in useCategoryTable) ──
+  const addCategory = (data) => categoryAPI.add(data);
+  const editCategory = (id, data) => categoryAPI.update(id, data);
+  const deleteCategory = (id) => categoryAPI.delete(id);
+  const toggleCategory = (id, active) => categoryAPI.update(id, { active });
 
   // ── Subcategory CRUD ──────────────────────────────────────
   function addSubcategory(categoryId, name) {
@@ -106,7 +84,6 @@ export function AdminProvider({ children }) {
   return (
     <AdminContext.Provider value={{
       products, addProduct, editProduct, deleteProduct, updateStock,
-      categories, categoriesLoading, categoriesError,
       addCategory, editCategory, deleteCategory, toggleCategory,
       addSubcategory, editSubcategory, deleteSubcategory, toggleSubcategory,
     }}>
