@@ -10,6 +10,10 @@ const catgeorySchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  active: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const Category = mongoose.model("Category", catgeorySchema);

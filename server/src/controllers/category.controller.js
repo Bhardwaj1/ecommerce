@@ -2,7 +2,7 @@ const Category = require("../models/categoryModel");
 
 const addCategory = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, active } = req.body;
 
     let checkDuplicateCategory = await Category.findOne({ name: name });
     if (checkDuplicateCategory) {
@@ -14,6 +14,7 @@ const addCategory = async (req, res) => {
     const newCategory = new Category({
       name,
       description,
+      active,
     });
     await newCategory.save();
     res.status(201).json({
