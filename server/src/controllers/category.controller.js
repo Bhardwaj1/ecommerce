@@ -32,7 +32,42 @@ const addCategory = async (req, res) => {
 
 const getAllCategory = async (req, res) => {
   try {
-    let categories = await Category.find();
+    let { search = "", page = 1, perPage = 10 } = req.query;
+
+    page = Number(page);
+    perPage = Number(page);
+
+    let filter = {};
+
+    if (search) {
+      filter = {
+        $or: [
+          {
+            name: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            description: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ],
+      };
+    }
+
+    // Total Count
+    const totalRecords = await Category.countDocuments(filter);
+
+    // pagination
+
+    const categories = await Category.find(filter)
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .sort({ createdAt: -1 });
+    // let categories = await Category.find();
     res.status(200).json({
       success: true,
       data: categories,
