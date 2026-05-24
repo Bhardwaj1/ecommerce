@@ -6,7 +6,7 @@ const addCategory = async (req, res) => {
 
     let checkDuplicateCategory = await Category.findOne({ name: name });
     if (checkDuplicateCategory) {
-      return res.status(403).json({
+      return res.status(409).json({
         success: false,
         error: `${name} already exists`,
       });
@@ -71,7 +71,13 @@ const getAllCategory = async (req, res) => {
     res.status(200).json({
       success: true,
       data: categories,
-      message: "Data fetched successfully",
+      message: "Category fetched successfully",
+      meta: {
+        page: page,
+        totalRecords,
+        perPage,
+        totalPages: Math.ceil(totalRecords / perPage),
+      },
     });
   } catch (error) {
     res.status(500).json({

@@ -7,7 +7,7 @@ const addSubCategory = async (req, res) => {
     const duplicateSubCategory = await subCategoryModel.findOne({ name });
 
     if (duplicateSubCategory) {
-      return res.status(403).json({
+      return res.status(409).json({
         success: false,
         error: "Sub category already exists",
       });
@@ -36,7 +36,7 @@ const addSubCategory = async (req, res) => {
 };
 const getAllSubCategory = async (req, res) => {
   try {
-    const { search = "", perPage = 10, page = 1 } = req.query;
+    let { search = "", perPage = 10, page = 1 } = req.query;
     page = Number(page);
     perPage = Number(perPage);
 
@@ -44,7 +44,7 @@ const getAllSubCategory = async (req, res) => {
     if (search) {
       filter = {
         $or: [
-          ({
+          {
             name: {
               $regex: search,
               $options: "i",
@@ -55,12 +55,13 @@ const getAllSubCategory = async (req, res) => {
               $regex: search,
               $options: "i",
             },
-          }),
+          },
         ],
       };
     }
     const totalRecords = await SubCategory.countDocuments(filter);
     const subCategories = await SubCategory.find(filter)
+      .populate("parentCategory", "name description")
       .skip((page - 1) * perPage)
       .limit(perPage)
       .sort({ createdAt: -1 });
@@ -72,7 +73,7 @@ const getAllSubCategory = async (req, res) => {
         page: page,
         totalRecords,
         perPage,
-        totalPages:Math.ceil(totalRecords/perPage)
+        totalPages: Math.ceil(totalRecords / perPage),
       },
     });
   } catch (error) {
@@ -82,9 +83,7 @@ const getAllSubCategory = async (req, res) => {
     });
   }
 };
-const updateSubCategory = (req,res) => {
-    
-};
+const updateSubCategory = (req, res) => {};
 const deleteSubCategory = () => {};
 
 module.exports = {
