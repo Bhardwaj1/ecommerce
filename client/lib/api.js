@@ -1,3 +1,5 @@
+import { queryCache } from "./queryCache";
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 async function request(path, options = {}) {
@@ -17,12 +19,37 @@ async function request(path, options = {}) {
 }
 
 export const categoryAPI = {
-  getAll: ({ search = "", page = 1, perPage = 8 } = {}) => {
+  getAll({ search = "", page = 1, perPage = 8 } = {}, signal) {
     const params = new URLSearchParams({ page, perPage });
     if (search) params.set("search", search);
-    return request(`/api/category?${params}`);
+    const path = `/api/category?${params}`;
+    const cacheKey = `category:list:${path}`;
+
+    const cached = queryCache.get(cacheKey);
+    if (cached) return Promise.resolve(cached);
+
+    return queryCache.dedupe(cacheKey, async () => {
+      const data = await request(path, { signal });
+      queryCache.set(cacheKey, data);
+      return data;
+    });
   },
-  add: (body) => request("/api/category", { method: "POST", body: JSON.stringify(body) }),
-  update: (id, body) => request(`/api/category/${id}`, { method: "PUT", body: JSON.stringify(body) }),
-  delete: (id) => request(`/api/category/${id}`, { method: "DELETE" }),
+
+  async add(body) {
+    const data = await request("/api/category", { method: "POST", body: JSON.stringify(body) });
+    queryCache.invalidate("category:list:");
+    return data;
+  },
+
+  async update(id, body) {
+    const data = await request(`/api/category/${id}`, { method: "PUT", body: JSON.stringify(body) });
+    queryCache.invalidate("category:list:");
+    return data;
+  },
+
+  async delete(id) {
+    const data = await request(`/api/category/${id}`, { method: "DELETE" });
+    queryCache.invalidate("category:list:");
+    return data;
+  },
 };

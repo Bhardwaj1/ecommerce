@@ -35,7 +35,7 @@ const getAllCategory = async (req, res) => {
     let { search = "", page = 1, perPage = 10 } = req.query;
 
     page = Number(page);
-    perPage = Number(page);
+    perPage = Number(perPage);
 
     let filter = {};
 

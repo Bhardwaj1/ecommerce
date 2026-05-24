@@ -43,43 +43,11 @@ export function AdminProvider({ children }) {
   const deleteCategory = (id) => categoryAPI.delete(id);
   const toggleCategory = (id, active) => categoryAPI.update(id, { active });
 
-  // ── Subcategory CRUD ──────────────────────────────────────
-  function addSubcategory(categoryId, name) {
-    setCategories((prev) =>
-      prev.map((c) =>
-        c.id === categoryId
-          ? { ...c, subcategories: [...c.subcategories, { id: Date.now(), name, active: true }] }
-          : c
-      )
-    );
-  }
-  function editSubcategory(categoryId, subId, name) {
-    setCategories((prev) =>
-      prev.map((c) =>
-        c.id === categoryId
-          ? { ...c, subcategories: c.subcategories.map((s) => (s.id === subId ? { ...s, name } : s)) }
-          : c
-      )
-    );
-  }
-  function deleteSubcategory(categoryId, subId) {
-    setCategories((prev) =>
-      prev.map((c) =>
-        c.id === categoryId
-          ? { ...c, subcategories: c.subcategories.filter((s) => s.id !== subId) }
-          : c
-      )
-    );
-  }
-  function toggleSubcategory(categoryId, subId) {
-    setCategories((prev) =>
-      prev.map((c) =>
-        c.id === categoryId
-          ? { ...c, subcategories: c.subcategories.map((s) => (s.id === subId ? { ...s, active: !s.active } : s)) }
-          : c
-      )
-    );
-  }
+  // ── Subcategory CRUD (local state — to be wired to API when ready) ──
+  const addSubcategory = () => {};
+  const editSubcategory = () => {};
+  const deleteSubcategory = () => {};
+  const toggleSubcategory = () => {};
 
   return (
     <AdminContext.Provider value={{

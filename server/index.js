@@ -9,12 +9,14 @@ const app = express();
 
 // Api routes
 const categoryRoutes = require("./src/routes/category.route");
+const subCategoryRoutes = require("./src/routes/subCategory.route");
 
 app.use(express.json());
 app.use(cors());
 
 // Api Urls
 app.use("/api/category", categoryRoutes);
+app.use("/api/subCatgeory", subCategoryRoutes);
 app.get("/", (req, res) => res.send("App is running"));
 
 // Server port
