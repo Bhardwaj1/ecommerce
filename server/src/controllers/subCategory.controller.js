@@ -1,10 +1,10 @@
 const SubCategory = require("../models/subCategoryModel");
-const subCategoryModel = require("../models/subCategoryModel");
+
 
 const addSubCategory = async (req, res) => {
   try {
     const { name, description, active, parentCategory } = req.body;
-    const duplicateSubCategory = await subCategoryModel.findOne({ name });
+    const duplicateSubCategory = await SubCategory.findOne({ name });
 
     if (duplicateSubCategory) {
       return res.status(409).json({
@@ -13,7 +13,7 @@ const addSubCategory = async (req, res) => {
       });
     }
 
-    const subCategory = new subCategoryModel({
+    const subCategory = new SubCategory({
       name,
       description,
       active,
@@ -83,8 +83,40 @@ const getAllSubCategory = async (req, res) => {
     });
   }
 };
-const updateSubCategory = (req, res) => {};
-const deleteSubCategory = () => {};
+const updateSubCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let subCategory = await SubCategory.findByIdAndUpdate(id, req.body, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+    res.status(200).json({
+      success: true,
+      message: "Subcategory updated successfully",
+      subcategory: subCategory,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+const deleteSubCategory = async(req, res) => {
+  try {
+    const {id}=req.params;
+     await SubCategory.findByIdAndDelete(id);
+    res.status(200).json({
+      success:true,
+      message:"Subcategory deleted successfully"
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
 
 module.exports = {
   addSubCategory,
