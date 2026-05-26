@@ -37,10 +37,10 @@ const getAllCategory = async (req, res) => {
     page = Number(page);
     perPage = Number(perPage);
 
-    let filter = {};
+    let matchFilter = {};
 
     if (search) {
-      filter = {
+      matchFilter = {
         $or: [
           {
             name: {
@@ -59,14 +59,61 @@ const getAllCategory = async (req, res) => {
     }
 
     // Total Count
-    const totalRecords = await Category.countDocuments(filter);
+    const totalRecords = await Category.countDocuments(matchFilter);
 
     // pagination
 
-    const categories = await Category.find(filter)
-      .skip((page - 1) * perPage)
-      .limit(perPage)
-      .sort({ createdAt: -1 });
+    const categories = await Category.aggregate([
+      {
+        $match: matchFilter,
+      },
+      {
+        $lookup: {
+          from: "subcategories",
+          localField: "_id",
+          foreignField: "parentCategory",
+          as: "subCategories",
+        },
+      },
+      {
+        $addFields: {
+          totalSubCategories: {
+            $size: "$subCategories",
+          },
+          activeSubCategories: {
+            $size: {
+              $filter: {
+                input: "$subCategories",
+                as: "sub",
+                cond: {
+                  $eq: ["$$sub.active", true],
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          description: 1,
+          active: 1,
+          totalSubCategories: 1,
+          activeSubCategories: 1,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $skip: (page - 1) * perPage,
+      },
+      {
+        $limit: perPage,
+      },
+    ]);
     // let categories = await Category.find();
     res.status(200).json({
       success: true,

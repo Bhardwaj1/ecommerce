@@ -1,6 +1,5 @@
 const SubCategory = require("../models/subCategoryModel");
 
-
 const addSubCategory = async (req, res) => {
   try {
     const { name, description, active, parentCategory } = req.body;
@@ -40,31 +39,67 @@ const getAllSubCategory = async (req, res) => {
     page = Number(page);
     perPage = Number(perPage);
 
-    const filter = {};
-    if (search) {
-      filter = {
-        $or: [
-          {
-            name: {
-              $regex: search,
-              $options: "i",
-            },
+    let matchFilter = {};
+    const totalRecords = await SubCategory.countDocuments(matchFilter);
+    const subCategories = await SubCategory.aggregate([
+      {
+        $lookup: {
+          from: "categories",
+          localField: "parentCategory",
+          foreignField: "_id",
+          as: "parentCategory",
+        },
+      },
+      {
+        $unwind: "$parentCategory",
+      },
+      {
+        $project: {
+          name: 1,
+          description: 1,
+          active: 1,
+          parentCategory: {
+            _id: "$parentCategory._id",
+            name: "$parentCategory.name",
           },
-          {
-            description: {
-              $regex: search,
-              $options: "i",
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              name: {
+                $regex: search,
+                $options: "i",
+              },
             },
-          },
-        ],
-      };
-    }
-    const totalRecords = await SubCategory.countDocuments(filter);
-    const subCategories = await SubCategory.find(filter)
-      .populate("parentCategory", "name description")
-      .skip((page - 1) * perPage)
-      .limit(perPage)
-      .sort({ createdAt: -1 });
+            {
+              description: {
+                $regex: search,
+                $options: "i",
+              },
+            },
+            {
+              "parentCategory.name": {
+                $regex: search,
+                $options: "i",
+              },
+            },
+          ],
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $skip: (page - 1) * perPage,
+      },
+      {
+        $limit: perPage,
+      },
+    ]);
     res.status(200).json({
       success: true,
       message: "Sub Categories fetched successfully",
@@ -102,14 +137,14 @@ const updateSubCategory = async (req, res) => {
     });
   }
 };
-const deleteSubCategory = async(req, res) => {
+const deleteSubCategory = async (req, res) => {
   try {
-    const {id}=req.params;
-     await SubCategory.findByIdAndDelete(id);
+    const { id } = req.params;
+    await SubCategory.findByIdAndDelete(id);
     res.status(200).json({
-      success:true,
-      message:"Subcategory deleted successfully"
-    })
+      success: true,
+      message: "Subcategory deleted successfully",
+    });
   } catch (error) {
     res.status(500).json({
       success: false,

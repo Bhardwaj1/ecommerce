@@ -67,7 +67,7 @@ const createProduct = async (req, res) => {
 };
 const getAllProduct = async (req, res) => {
   try {
-    const { search = "", perPage = 10, page = 1 } = req.query;
+    let { search = "", perPage = 10, page = 1 } = req.query;
 
     page = Number(page);
     perPage = Number(perPage);
@@ -107,13 +107,30 @@ const getAllProduct = async (req, res) => {
 
     const totalRecords = await Product.countDocuments(filter);
     const products = await Product.find(filter)
+      .select(
+        "_id name slug price volume alcoholPercentage category images subCategory active",
+      )
+      .populate("category", "name _id")
+      .populate("subCategory", "name _id")
       .skip((page - 1) * perPage)
       .limit(perPage)
       .sort({ createdAt: -1 });
 
+    let formattedProducts = products.map((item) => ({
+      _id: item?._id,
+      name: item?.name,
+      slug: item?.slug,
+      volume: item?.volume,
+      alcoholPercentage: item?.alcoholPercentage,
+      category: item?.category,
+      thumbnails: item?.images[0].url,
+      subCategory: item?.subCategory,
+      active: item?.active,
+    }));
+
     res.status(200).json({
       success: true,
-      data: products,
+      data: formattedProducts,
       message: "Products fetched successfully",
       meta: {
         page: page,
@@ -129,6 +146,8 @@ const getAllProduct = async (req, res) => {
     });
   }
 };
+
+const getSingleProduct = async (req, res) => {};
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -141,6 +160,8 @@ const updateProduct = async (req, res) => {
         error: "Product not found",
       });
     }
+
+    console.log(req.body);
 
     const existingImage = JSON.parse(req.body.existingImage || "[]");
 
@@ -169,6 +190,13 @@ const updateProduct = async (req, res) => {
 
     const finalImages = [...existingImage, ...uploadedImages];
 
+    product.name = req.body.name;
+    product.slug = req.body.slug;
+    product.description = req.body.description;
+    product.price = req.body.price;
+    product.stock = req.body.stock;
+    product.images = finalImages;
+    await product.save();
     // const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
     //   returnDocument: "after",
     //   runValidators: true,
@@ -201,4 +229,10 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-module.exports = { createProduct, getAllProduct, updateProduct, deleteProduct };
+module.exports = {
+  createProduct,
+  getAllProduct,
+  updateProduct,
+  deleteProduct,
+  getSingleProduct,
+};
