@@ -35,8 +35,10 @@ export default function ProductCard({ product }) {
     setTimeout(() => setAdded(false), 2000);
   }
 
+  const href = product.slug ? `/product/${product.slug}` : `/product/${id}`;
+
   return (
-    <Link href={`/product/${id}`} className="block">
+    <Link href={href} className="block">
       <div
         className="glass rounded-2xl overflow-hidden cursor-pointer group relative"
         onMouseEnter={() => setIsHovered(true)}

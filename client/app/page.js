@@ -1,12 +1,46 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import ProductCard from "./components/ProductCard";
-import { useAdmin } from "../context/AdminContext";
+import { productAPI } from "../lib/api";
 import { categories } from "../lib/products";
 
 export default function Home() {
-  const { products } = useAdmin();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  useEffect(() => {
+    productAPI.getAll({ perPage: 20 })
+      .then((res) => setProducts(res.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Normalize API product to shape ProductCard expects
+  function normalize(p) {
+    return {
+      id: p._id,
+      _id: p._id,
+      name: p.name,
+      slug: p.slug,
+      category: p.category?.name ?? p.category ?? "",
+      price: p.price,
+      description: p.description ?? "",
+      rating: p.rating ?? 4.0,
+      inStock: p.active,
+      stockQty: p.stock ?? 0,
+      alcoholPercent: p.alcoholPercentage,
+      volume: p.volume,
+      images: p.thumbnails ? [{ url: p.thumbnails }] : [],
+      emoji: "🍾",
+    };
+  }
+
+  const filtered = products
+    .map(normalize)
+    .filter((p) => activeCategory === "All" || p.category.toLowerCase().includes(activeCategory.toLowerCase()));
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -38,7 +72,9 @@ export default function Home() {
           {categories.map((cat) => (
             <button
               key={cat.label}
-              className="glass px-5 py-2 rounded-full text-sm text-zinc-300 hover:text-white whitespace-nowrap transition-all hover:border-yellow-600/50"
+              onClick={() => setActiveCategory(cat.label)}
+              className="glass px-5 py-2 rounded-full text-sm whitespace-nowrap transition-all hover:border-yellow-600/50"
+              style={{ color: activeCategory === cat.label ? "var(--gold)" : undefined, borderColor: activeCategory === cat.label ? "var(--gold)" : undefined }}
             >
               {cat.emoji} {cat.label}
             </button>
@@ -52,13 +88,19 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-white">
             Featured <span className="gold-text">Products</span>
           </h2>
-          <span className="text-sm text-zinc-500">{products.length} products</span>
+          <span className="text-sm text-zinc-500">{filtered.length} products</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center text-zinc-500 py-20">Loading...</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center text-zinc-500 py-20">No products found.</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Footer */}

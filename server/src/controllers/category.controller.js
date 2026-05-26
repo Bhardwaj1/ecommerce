@@ -6,7 +6,7 @@ const addCategory = async (req, res) => {
 
     let checkDuplicateCategory = await Category.findOne({ name: name });
     if (checkDuplicateCategory) {
-      return res.status(403).json({
+      return res.status(409).json({
         success: false,
         error: `${name} already exists`,
       });
@@ -32,11 +32,99 @@ const addCategory = async (req, res) => {
 
 const getAllCategory = async (req, res) => {
   try {
-    let categories = await Category.find();
+    let { search = "", page = 1, perPage = 10 } = req.query;
+
+    page = Number(page);
+    perPage = Number(perPage);
+
+    let matchFilter = {};
+
+    if (search) {
+      matchFilter = {
+        $or: [
+          {
+            name: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            description: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ],
+      };
+    }
+
+    // Total Count
+    const totalRecords = await Category.countDocuments(matchFilter);
+
+    // pagination
+
+    const categories = await Category.aggregate([
+      {
+        $match: matchFilter,
+      },
+      {
+        $lookup: {
+          from: "subcategories",
+          localField: "_id",
+          foreignField: "parentCategory",
+          as: "subCategories",
+        },
+      },
+      {
+        $addFields: {
+          totalSubCategories: {
+            $size: "$subCategories",
+          },
+          activeSubCategories: {
+            $size: {
+              $filter: {
+                input: "$subCategories",
+                as: "sub",
+                cond: {
+                  $eq: ["$$sub.active", true],
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          description: 1,
+          active: 1,
+          totalSubCategories: 1,
+          activeSubCategories: 1,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $skip: (page - 1) * perPage,
+      },
+      {
+        $limit: perPage,
+      },
+    ]);
+    // let categories = await Category.find();
     res.status(200).json({
       success: true,
       data: categories,
-      message: "Data fetched successfully",
+      message: "Category fetched successfully",
+      meta: {
+        page: page,
+        totalRecords,
+        perPage,
+        totalPages: Math.ceil(totalRecords / perPage),
+      },
     });
   } catch (error) {
     res.status(500).json({

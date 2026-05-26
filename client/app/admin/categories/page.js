@@ -9,10 +9,8 @@ import { TableSkeleton } from "../../components/TableSkeleton";
 import { Loader } from "../../components/Loader";
 import { useCategoryTable } from "../../../hooks/useCategoryTable";
 
-const emojiOptions = ["🥃", "🍺", "🍷", "🍸", "🍹", "🍾", "🫗", "🧊", "🍶", "🥂"];
-
 const TABLE_COLS = [
-  { type: "avatar", textWidth: 100 },
+  { type: "text", width: 120 },
   { type: "text", width: "60%" },
   { type: "text", width: 80 },
   { type: "badge" },
@@ -23,7 +21,6 @@ function CategoryModal({ category, onClose, onSubmit }) {
   const isEdit = !!category;
   const [form, setForm] = useState({
     name: category?.name || "",
-    emoji: category?.emoji || "🍾",
     description: category?.description || "",
     active: category?.active ?? true,
   });
@@ -59,21 +56,6 @@ function CategoryModal({ category, onClose, onSubmit }) {
               onChange={(e) => { setForm((p) => ({ ...p, name: e.target.value })); setError(""); }}
             />
             {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
-          </div>
-
-          <div>
-            <label className="block text-xs text-zinc-400 uppercase tracking-wider mb-1.5">Emoji</label>
-            <div className="flex gap-2 flex-wrap">
-              {emojiOptions.map((em) => (
-                <button key={em} type="button" onClick={() => setForm((p) => ({ ...p, emoji: em }))}
-                  className="w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all"
-                  style={{
-                    background: form.emoji === em ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.04)",
-                    border: `1px solid ${form.emoji === em ? "var(--gold)" : "var(--glass-border)"}`,
-                  }}
-                >{em}</button>
-              ))}
-            </div>
           </div>
 
           <div>
@@ -115,7 +97,7 @@ function CategoryModal({ category, onClose, onSubmit }) {
 
 export default function CategoriesPage() {
   const { addCategory, editCategory, deleteCategory, toggleCategory } = useAdmin();
-  const { rows, total, totalPages, page, setPage, search, setSearch, loading, error, refetch, perPage } = useCategoryTable();
+  const { rows, total, totalPages, page, setPage, search, setSearch, loading, error, refetch, perPage, optimisticDelete, revertDelete, optimisticToggle } = useCategoryTable();
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -134,24 +116,27 @@ export default function CategoriesPage() {
   }
 
   async function handleDelete() {
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    optimisticDelete(target._id);
     try {
-      await deleteCategory(deleteTarget._id);
-      showToast(`"${deleteTarget.name}" deleted`, "success");
+      await deleteCategory(target._id);
+      showToast(`"${target.name}" deleted`, "success");
       if (rows.length === 1 && page > 1) setPage((p) => p - 1);
       else refetch();
     } catch {
+      revertDelete(target);
       showToast("Failed to delete", "error");
-    } finally {
-      setDeleteTarget(null);
     }
   }
 
   async function handleToggle(cat) {
+    optimisticToggle(cat._id);
     try {
       await toggleCategory(cat._id, !cat.active);
       showToast(`"${cat.name}" ${cat.active ? "deactivated" : "activated"}`, cat.active ? "warning" : "success");
-      refetch();
     } catch {
+      optimisticToggle(cat._id); // revert
       showToast("Failed to update", "error");
     }
   }
@@ -232,10 +217,7 @@ export default function CategoriesPage() {
                     className="hover:bg-white/[0.02] transition-colors"
                   >
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl w-8 text-center">{cat.emoji}</span>
-                        <span className="text-white font-medium">{cat.name}</span>
-                      </div>
+                      <span className="text-white font-medium">{cat.name}</span>
                     </td>
                     <td className="px-4 py-3 text-zinc-400 max-w-xs">
                       <span className="line-clamp-1">{cat.description || "—"}</span>
