@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useAdmin } from "../../context/AdminContext";
 
 export default function AdminDashboard() {
-  const { products } = useAdmin();
+  const { products = [] } = useAdmin();
 
   const inStock = products.filter((p) => p.inStock).length;
   const outOfStock = products.filter((p) => !p.inStock).length;
   const categories = [...new Set(products.map((p) => p.category))].length;
+  
 
   const stats = [
     { label: "Total Products", value: products.length, icon: "🍾", color: "var(--gold)" },

@@ -66,3 +66,81 @@ body {
   border-color: var(--gold);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(201, 168, 76, 0.1);
 }
+
+/* ── Global interactive cursor ── */
+button,
+[role="button"],
+select,
+label[for],
+[onClick] {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* ── Reusable UI primitives ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: rgba(239,68,68,0.08);
+  color: #f87171;
+  border-color: rgba(239,68,68,0.2);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.4);
+}
+
+.btn-success {
+  background: rgba(34,197,94,0.08);
+  color: #4ade80;
+  border-color: rgba(34,197,94,0.2);
+}
+
+.btn-success:hover:not(:disabled) {
+  background: rgba(34,197,94,0.15);
+  border-color: rgba(34,197,94,0.4);
+}
+
+.btn-ghost {
+  background: rgba(255,255,255,0.04);
+  color: #a1a1aa;
+  border-color: var(--glass-border);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.btn-warning {
+  background: rgba(251,191,36,0.08);
+  color: #fbbf24;
+  border-color: rgba(251,191,36,0.2);
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: rgba(251,191,36,0.15);
+  border-color: rgba(251,191,36,0.4);
+}

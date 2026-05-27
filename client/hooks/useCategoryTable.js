@@ -36,8 +36,10 @@ export function useCategoryTable() {
       );
       if (controller.signal.aborted) return;
       setRows(res.data);
-      setTotal(res.total ?? res.data.length);
-      setTotalPages(res.totalPages ?? 1);
+      const meta = res.meta ?? {};
+      const totalCount = meta.totalRecords ?? res.total ?? res.data.length;
+      setTotal(totalCount);
+      setTotalPages(meta.totalPages ?? res.totalPages ?? Math.max(1, Math.ceil(totalCount / PER_PAGE)));
       retryRef.current = 0;
     } catch (err) {
       if (err.name === "AbortError") return;
