@@ -125,9 +125,9 @@ export default function CategoriesPage() {
       showToast(`"${target.name}" deleted`, "success");
       if (rows.length === 1 && page > 1) setPage((p) => p - 1);
       else refetch();
-    } catch {
+    } catch (err) {
       revertDelete(target);
-      showToast("Failed to delete", "error");
+      showToast(err.message || "Failed to delete", "error");
     }
   }
 

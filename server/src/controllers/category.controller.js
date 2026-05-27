@@ -1,4 +1,5 @@
 const Category = require("../models/categoryModel");
+const SubCategory = require("../models/subCategoryModel");
 
 const addCategory = async (req, res) => {
   try {
@@ -158,6 +159,16 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
+
+    const checkSubCategory = await SubCategory.findOne({ parentCategory: id });
+
+    console.log(checkSubCategory);
+    if (checkSubCategory) {
+      return res.status(400).json({
+        success: false,
+        error: "Category already in use subcategory",
+      });
+    }
     await Category.findByIdAndDelete(id);
     res.status(200).json({
       success: true,

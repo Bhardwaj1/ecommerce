@@ -10,6 +10,7 @@ const app = express();
 // Api routes
 const categoryRoutes = require("./src/routes/category.route");
 const subCategoryRoutes = require("./src/routes/subCategory.route");
+const volumeRoutes=require("./src/routes/volume.route");
 const productRoutes = require("./src/routes/product.route");
 
 app.use(express.json());
@@ -18,6 +19,7 @@ app.use(cors());
 // Api Urls
 app.use("/api/category", categoryRoutes);
 app.use("/api/subCategory", subCategoryRoutes);
+app.use("/api/volume",volumeRoutes);
 app.use("/api/product", productRoutes);
 app.get("/", (req, res) => res.send("App is running"));
 
