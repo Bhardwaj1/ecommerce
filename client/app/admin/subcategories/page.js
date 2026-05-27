@@ -5,10 +5,11 @@ import { categoryAPI, subCategoryAPI } from "../../../lib/api";
 import { Toast, useToast } from "../../components/Toast";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { TableSkeleton } from "../../components/TableSkeleton";
-import { Loader } from "../../components/Loader";
+import { Button } from "../../components/Button";
+import { Pagination } from "../../components/Pagination";
+import { SearchBar } from "../../components/SearchBar";
+import { StatusBadge } from "../../components/StatusBadge";
 import { useDebounce } from "../../../hooks/useDebounce";
-
-const PER_PAGE_OPTIONS = [5, 10, 20, 50];
 
 const TABLE_COLS = [
   { type: "text", width: 140 },
@@ -65,8 +66,10 @@ export default function SubcategoriesPage() {
       );
       if (ctrl.signal.aborted) return;
       setRows(res.data ?? []);
-      setTotal(res.total ?? res.data?.length ?? 0);
-      setTotalPages(res.totalPages ?? 1);
+      const meta = res.meta ?? {};
+      const totalCount = meta.totalRecords ?? res.total ?? res.data?.length ?? 0;
+      setTotal(totalCount);
+      setTotalPages(meta.totalPages ?? res.totalPages ?? Math.max(1, Math.ceil(totalCount / pp)));
     } catch (err) {
       if (err.name === "AbortError") return;
       setError(err.message);
@@ -221,10 +224,7 @@ export default function SubcategoriesPage() {
                 {addError && <p className="text-xs text-red-400 mt-1">{addError}</p>}
               </div>
 
-              <button type="submit" disabled={adding} className="gold-btn w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
-                {adding && <Loader size={14} />}
-                + Add Subcategory
-              </button>
+              <Button type="submit" variant="gold" size="md" loading={adding} className="w-full">+ Add Subcategory</Button>
             </form>
 
             {/* Category summary */}
@@ -251,35 +251,14 @@ export default function SubcategoriesPage() {
           {/* Toolbar: search + perPage + filter pills */}
           <div className="glass rounded-2xl overflow-hidden">
 
-            {/* Search + perPage row */}
-            <div className="px-4 py-3 flex items-center gap-3 border-b" style={{ borderColor: "var(--glass-border)" }}>
-              <span className="text-zinc-500 text-sm">🔍</span>
-              <input
-                className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-zinc-600"
-                placeholder="Search subcategories..."
-                value={search}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-              {loading && <Loader size={15} />}
-              {!loading && search && (
-                <button onClick={() => handleSearch("")} className="text-zinc-500 hover:text-white text-xs transition-colors">✕</button>
-              )}
-              <div className="h-4 w-px bg-zinc-700" />
-              {/* perPage selector */}
-              <div className="flex items-center gap-2">
-                <span className="text-zinc-500 text-xs whitespace-nowrap">Rows</span>
-                <select
-                  className="bg-zinc-900 border rounded-lg px-2 py-1 text-white text-xs outline-none"
-                  style={{ borderColor: "var(--glass-border)" }}
-                  value={perPage}
-                  onChange={(e) => handlePerPage(e.target.value)}
-                >
-                  {PER_PAGE_OPTIONS.map((n) => (
-                    <option key={n} value={n} className="bg-zinc-900">{n}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <SearchBar
+              value={search}
+              onChange={handleSearch}
+              loading={loading}
+              placeholder="Search subcategories..."
+              perPage={perPage}
+              onPerPageChange={handlePerPage}
+            />
 
             {/* Filter pills */}
             <div className="px-4 py-2.5 flex items-center gap-2 flex-wrap border-b" style={{ borderColor: "var(--glass-border)" }}>
@@ -378,17 +357,7 @@ export default function SubcategoriesPage() {
 
                         {/* Status */}
                         <td className="px-4 py-3">
-                          <button
-                            onClick={() => handleToggle(sub)}
-                            className="text-xs px-2.5 py-1 rounded-full font-semibold transition-all"
-                            style={{
-                              background: sub.active ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-                              color: sub.active ? "#4ade80" : "#f87171",
-                              border: `1px solid ${sub.active ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`,
-                            }}
-                          >
-                            {sub.active ? "● Active" : "● Inactive"}
-                          </button>
+                          <StatusBadge active={sub.active} onClick={() => handleToggle(sub)} />
                         </td>
 
                         {/* Actions */}
@@ -396,27 +365,13 @@ export default function SubcategoriesPage() {
                           <div className="flex items-center gap-2">
                             {isEditing ? (
                               <>
-                                <button onClick={() => handleEditSave(sub)}
-                                  className="text-xs px-2.5 py-1.5 rounded-lg font-semibold"
-                                  style={{ background: "rgba(34,197,94,0.1)", color: "#4ade80", border: "1px solid rgba(34,197,94,0.2)" }}>
-                                  Save
-                                </button>
-                                <button onClick={cancelEdit}
-                                  className="text-xs px-2.5 py-1.5 rounded-lg glass text-zinc-400 hover:text-white transition-colors">
-                                  Cancel
-                                </button>
+                                <Button variant="success" size="sm" onClick={() => handleEditSave(sub)}>Save</Button>
+                                <Button variant="ghost" size="sm" onClick={cancelEdit}>Cancel</Button>
                               </>
                             ) : (
                               <>
-                                <button onClick={() => startEdit(sub)}
-                                  className="text-xs px-2.5 py-1.5 rounded-lg glass text-zinc-300 hover:text-white transition-colors">
-                                  Edit
-                                </button>
-                                <button onClick={() => setDeleteTarget(sub)}
-                                  className="text-xs px-2.5 py-1.5 rounded-lg transition-colors"
-                                  style={{ background: "rgba(239,68,68,0.08)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)" }}>
-                                  Delete
-                                </button>
+                                <Button variant="ghost" size="sm" onClick={() => startEdit(sub)}>Edit</Button>
+                                <Button variant="danger" size="sm" onClick={() => setDeleteTarget(sub)}>Delete</Button>
                               </>
                             )}
                           </div>
@@ -428,34 +383,7 @@ export default function SubcategoriesPage() {
               </tbody>
             </table>
 
-            {/* Pagination */}
-            {!loading && totalPages > 1 && (
-              <div className="px-4 py-3 border-t flex items-center justify-between" style={{ borderColor: "var(--glass-border)" }}>
-                <p className="text-xs text-zinc-500">
-                  Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, total)} of {total}
-                </p>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setPage((p) => p - 1)} disabled={page === 1}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium glass text-zinc-300 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                  >← Prev</button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <button key={p} onClick={() => setPage(p)}
-                      className="w-8 h-8 rounded-lg text-xs font-semibold transition-all"
-                      style={{
-                        background: page === p ? "var(--gold)" : "transparent",
-                        color: page === p ? "#09090b" : "#a1a1aa",
-                        border: page === p ? "none" : "1px solid var(--glass-border)",
-                      }}
-                    >{p}</button>
-                  ))}
-                  <button
-                    onClick={() => setPage((p) => p + 1)} disabled={page === totalPages}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium glass text-zinc-300 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                  >Next →</button>
-                </div>
-              </div>
-            )}
+            <Pagination page={page} totalPages={totalPages} total={total} perPage={perPage} onPageChange={setPage} />
           </div>
         </div>
       </div>

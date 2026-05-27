@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const SubCategory = require("../models/subCategoryModel");
 
 const addSubCategory = async (req, res) => {
@@ -35,13 +36,17 @@ const addSubCategory = async (req, res) => {
 };
 const getAllSubCategory = async (req, res) => {
   try {
-    let { search = "", perPage = 10, page = 1 } = req.query;
+    let { search = "", perPage = 10, page = 1, parentCategory } = req.query;
     page = Number(page);
     perPage = Number(perPage);
 
     let matchFilter = {};
+    if (parentCategory) {
+      matchFilter.parentCategory = new mongoose.Types.ObjectId(parentCategory);
+    }
     const totalRecords = await SubCategory.countDocuments(matchFilter);
     const subCategories = await SubCategory.aggregate([
+      { $match: matchFilter },
       {
         $lookup: {
           from: "categories",

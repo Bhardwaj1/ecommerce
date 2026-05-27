@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "./Button";
+
 export function ConfirmModal({ title, message, confirmLabel = "Delete", onConfirm, onCancel }) {
   return (
     <div
@@ -13,19 +15,8 @@ export function ConfirmModal({ title, message, confirmLabel = "Delete", onConfir
         </div>
         <p className="text-zinc-400 text-sm leading-relaxed">{message}</p>
         <div className="flex gap-3">
-          <button
-            onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
-            style={{ background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}
-          >
-            {confirmLabel}
-          </button>
-          <button
-            onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl text-sm text-zinc-300 hover:text-white transition-colors glass"
-          >
-            Cancel
-          </button>
+          <Button variant="danger" size="md" className="flex-1" onClick={onConfirm}>{confirmLabel}</Button>
+          <Button variant="ghost" size="md" className="flex-1" onClick={onCancel}>Cancel</Button>
         </div>
       </div>
     </div>

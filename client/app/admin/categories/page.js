@@ -7,6 +7,10 @@ import { Toast, useToast } from "../../components/Toast";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { TableSkeleton } from "../../components/TableSkeleton";
 import { Loader } from "../../components/Loader";
+import { Button } from "../../components/Button";
+import { Pagination } from "../../components/Pagination";
+import { SearchBar } from "../../components/SearchBar";
+import { StatusBadge } from "../../components/StatusBadge";
 import { useCategoryTable } from "../../../hooks/useCategoryTable";
 
 const TABLE_COLS = [
@@ -81,13 +85,10 @@ function CategoryModal({ category, onClose, onSubmit }) {
           </div>
 
           <div className="flex gap-3 pt-1">
-            <button type="submit" disabled={saving} className="gold-btn flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
-              {saving && <Loader size={14} />}
+            <Button type="submit" variant="gold" size="md" loading={saving} className="flex-1">
               {isEdit ? "Save Changes" : "Add Category"}
-            </button>
-            <button type="button" onClick={onClose} className="glass flex-1 py-2.5 rounded-xl text-sm text-zinc-300 hover:text-white transition-colors">
-              Cancel
-            </button>
+            </Button>
+            <Button type="button" variant="ghost" size="md" className="flex-1" onClick={onClose}>Cancel</Button>
           </div>
         </form>
       </div>
@@ -124,9 +125,9 @@ export default function CategoriesPage() {
       showToast(`"${target.name}" deleted`, "success");
       if (rows.length === 1 && page > 1) setPage((p) => p - 1);
       else refetch();
-    } catch {
+    } catch (err) {
       revertDelete(target);
-      showToast("Failed to delete", "error");
+      showToast(err.message || "Failed to delete", "error");
     }
   }
 
@@ -153,30 +154,13 @@ export default function CategoriesPage() {
             {loading ? "Loading..." : `${total} total categories`}
           </p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="gold-btn px-4 py-2 rounded-xl text-sm font-bold">
-          + Add Category
-        </button>
+        <Button variant="gold" size="md" onClick={() => setShowAdd(true)}>+ Add Category</Button>
       </div>
 
       {/* Table Container */}
       <div className="glass rounded-2xl overflow-hidden">
 
-        {/* Search bar */}
-        <div className="px-4 py-3 border-b flex items-center gap-3" style={{ borderColor: "var(--glass-border)" }}>
-          <span className="text-zinc-500 text-sm">🔍</span>
-          <input
-            className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-zinc-600"
-            placeholder="Search categories..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          {loading && <Loader size={16} />}
-          {!loading && search && (
-            <button onClick={() => setSearch("")} className="text-zinc-500 hover:text-white text-xs transition-colors">
-              ✕ Clear
-            </button>
-          )}
-        </div>
+        <SearchBar value={search} onChange={setSearch} loading={loading} placeholder="Search categories..." />
 
         {/* Table */}
         <table className="w-full text-sm">
@@ -205,9 +189,7 @@ export default function CategoriesPage() {
                 </td>
               </tr>
             ) : (
-              rows.map((cat, i) => {
-                const activeSubs = (cat.subcategories || []).filter((s) => s.active).length;
-                return (
+              rows.map((cat, i) => (
                   <tr
                     key={cat._id}
                     style={{
@@ -224,104 +206,33 @@ export default function CategoriesPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-white font-medium">{(cat.subcategories || []).length}</span>
+                        <span className="text-white font-medium">{cat.totalSubCategories ?? 0}</span>
                         <span className="text-zinc-600 text-xs">total</span>
                         <span className="text-zinc-700 mx-1">·</span>
-                        <span className="text-green-400 font-medium">{activeSubs}</span>
+                        <span className="text-green-400 font-medium">{cat.activeSubCategories ?? 0}</span>
                         <span className="text-zinc-600 text-xs">active</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className="text-xs px-2.5 py-1 rounded-full font-semibold"
-                        style={{
-                          background: cat.active ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-                          color: cat.active ? "#4ade80" : "#f87171",
-                          border: `1px solid ${cat.active ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`,
-                        }}
-                      >
-                        {cat.active ? "● Active" : "● Inactive"}
-                      </span>
+                      <StatusBadge active={cat.active} />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleToggle(cat)}
-                          className="text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-all"
-                          style={{
-                            background: cat.active ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)",
-                            color: cat.active ? "#f87171" : "#4ade80",
-                            border: `1px solid ${cat.active ? "rgba(239,68,68,0.2)" : "rgba(34,197,94,0.2)"}`,
-                          }}
-                        >
+                        <Button variant={cat.active ? "danger" : "success"} size="sm" onClick={() => handleToggle(cat)}>
                           {cat.active ? "Deactivate" : "Activate"}
-                        </button>
-                        <Link
-                          href={`/admin/categories/${cat._id}`}
-                          className="text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-colors glass text-zinc-300 hover:text-white"
-                        >
-                          Manage
-                        </Link>
-                        <button
-                          onClick={() => setEditTarget(cat)}
-                          className="text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-colors glass text-zinc-300 hover:text-white"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => setDeleteTarget(cat)}
-                          className="text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-colors"
-                          style={{ background: "rgba(239,68,68,0.08)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)" }}
-                        >
-                          Delete
-                        </button>
+                        </Button>
+                        <Link href={`/admin/categories/${cat._id}`} className="btn btn-ghost px-2.5 py-1.5 text-xs">Manage</Link>
+                        <Button variant="ghost" size="sm" onClick={() => setEditTarget(cat)}>Edit</Button>
+                        <Button variant="danger" size="sm" onClick={() => setDeleteTarget(cat)}>Delete</Button>
                       </div>
                     </td>
                   </tr>
-                );
-              })
+                ))
             )}
           </tbody>
         </table>
 
-        {/* Pagination */}
-        {!loading && totalPages > 1 && (
-          <div className="px-4 py-3 border-t flex items-center justify-between" style={{ borderColor: "var(--glass-border)" }}>
-            <p className="text-xs text-zinc-500">
-              Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, total)} of {total}
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage((p) => p - 1)}
-                disabled={page === 1}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed glass text-zinc-300 hover:text-white"
-              >
-                ← Prev
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className="w-8 h-8 rounded-lg text-xs font-semibold transition-all"
-                  style={{
-                    background: page === p ? "var(--gold)" : "transparent",
-                    color: page === p ? "#09090b" : "#a1a1aa",
-                    border: page === p ? "none" : "1px solid var(--glass-border)",
-                  }}
-                >
-                  {p}
-                </button>
-              ))}
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page === totalPages}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed glass text-zinc-300 hover:text-white"
-              >
-                Next →
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination page={page} totalPages={totalPages} total={total} perPage={perPage} onPageChange={setPage} />
       </div>
 
       {/* Modals */}
