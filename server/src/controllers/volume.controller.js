@@ -18,13 +18,13 @@ const createVolume = async (req, res) => {
       valueInMl,
     });
 
-   let savedValue= await volume.save();
+    let savedValue = await volume.save();
 
-    let formattedVolume= {
-        name:savedValue?.name,
-        valueInMl:savedValue?.valueInMl,
-        _id:savedValue?._id,
-    }
+    let formattedVolume = {
+      name: savedValue?.name,
+      valueInMl: savedValue?.valueInMl,
+      _id: savedValue?._id,
+    };
     res.status(201).json({
       success: true,
       message: "Volume created successfully",
@@ -37,7 +37,38 @@ const createVolume = async (req, res) => {
     });
   }
 };
-const getAllVolume = async (req, res) => {};
+const getAllVolume = async (req, res) => {
+  let { search = "", perPage = 10, page = 1 } = req.query;
+  page = Number(page);
+  perPage = Number(perPage);
+  let matchFilter = {};
+  if (search) {
+    matchFilter: {
+      $or: [
+        {
+          name: {
+            $regex: search,
+            $options: "i",
+          },
+          valueInMl: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ];
+    }
+  }
+
+  let totalRecords=await Volume.countDocuments(matchFilter);
+
+  let volumeData = await Volume.find(matchFilter);
+
+  console.log(volumeData);
+  res.status(200).json({
+    success: true,
+    data: volumeData,
+  });
+};
 const updateVolume = async (req, res) => {};
 const deleteVolume = async (req, res) => {};
 
