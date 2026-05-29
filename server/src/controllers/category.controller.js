@@ -161,8 +161,6 @@ const deleteCategory = async (req, res) => {
     const { id } = req.params;
 
     const checkSubCategory = await SubCategory.findOne({ parentCategory: id });
-
-    console.log(checkSubCategory);
     if (checkSubCategory) {
       return res.status(400).json({
         success: false,

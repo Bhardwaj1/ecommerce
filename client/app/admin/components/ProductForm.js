@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { categoryAPI, subCategoryAPI } from "../../../lib/api";
+import { categoryAPI, subCategoryAPI, volumeAPI } from "../../../lib/api";
 
 export default function ProductForm({ initialData, onSubmit, submitLabel }) {
   const router = useRouter();
@@ -30,6 +30,11 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
   const [dragOver, setDragOver] = useState(false);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [volumes, setVolumes] = useState([]);
+
+  useEffect(() => {
+    volumeAPI.getAll({ perPage: 100 }).then((res) => setVolumes(res.data ?? [])).catch(() => {});
+  }, []);
 
   // Fetch all categories on mount
   useEffect(() => {
@@ -193,9 +198,17 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
         </div>
         <div>
           <label className={labelClass}>Volume</label>
-          <input className={inputClass} style={{ borderColor: "var(--glass-border)" }}
-            placeholder="e.g. 750ml" value={form.volume}
-            onChange={(e) => field("volume", e.target.value)} />
+          <select
+            className={inputClass}
+            style={{ borderColor: "var(--glass-border)" }}
+            value={form.volume}
+            onChange={(e) => field("volume", e.target.value)}
+          >
+            <option value="" className="bg-zinc-900">Select volume</option>
+            {volumes.map((v) => (
+              <option key={v._id} value={v._id} className="bg-zinc-900">{v.name}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className={labelClass}>Alcohol % *</label>

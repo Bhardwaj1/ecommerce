@@ -19,6 +19,29 @@ async function request(path, options = {}) {
   return data;
 }
 
+export const volumeAPI = {
+  getAll({ search = "", page = 1, perPage = 10 } = {}, signal) {
+    const params = new URLSearchParams({ page, perPage });
+    if (search) params.set("search", search);
+    return request(`/api/volume?${params}`, { signal });
+  },
+  async add(body) {
+    const data = await request("/api/volume", { method: "POST", body: JSON.stringify(body) });
+    queryCache.invalidate("volume:list:");
+    return data;
+  },
+  async update(id, body) {
+    const data = await request(`/api/volume/${id}`, { method: "PUT", body: JSON.stringify(body) });
+    queryCache.invalidate("volume:list:");
+    return data;
+  },
+  async delete(id) {
+    const data = await request(`/api/volume/${id}`, { method: "DELETE" });
+    queryCache.invalidate("volume:list:");
+    return data;
+  },
+};
+
 export const productAPI = {
   getAll({ search = "", page = 1, perPage = 10 } = {}, signal) {
     const params = new URLSearchParams({ page, perPage });

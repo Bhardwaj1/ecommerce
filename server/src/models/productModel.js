@@ -35,9 +35,8 @@ const productSchema = new mongoose.Schema(
     },
 
     volume: {
-      type: Number,
-      required: true,
-      min: 0,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Volume",
     },
 
     alcoholPercentage: {
