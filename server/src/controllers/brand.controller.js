@@ -56,3 +56,5 @@ const getAllBrand = asyncHandler(async (req, res) => {});
 const updateBrand = asyncHandler(async (req, res) => {});
 
 const deleteBrand = asyncHandler(async (req, res) => {});
+
+module.exports = { createBrand, getAllBrand, deleteBrand, updateBrand };

@@ -9,7 +9,7 @@ const upload = require("../middlewares/multer");
 
 const router = express.Router();
 
-router.post("/", upload.single("uploadedImage"), createVolume);
+router.post("/", createVolume);
 router.get("/", getAllVolume);
 router.put("/:id", updateVolume);
 router.delete("/:id", deleteVolume);
