@@ -15,7 +15,7 @@ async function request(path, options = {}) {
   } catch {
     throw new Error(`Server error (${res.status})`);
   }
-  if (!res.ok) throw new Error(data.error || "Something went wrong");
+  if (!res.ok) throw new Error(data.error || data.message || "Something went wrong");
   return data;
 }
 
@@ -39,6 +39,30 @@ export const volumeAPI = {
     const data = await request(`/api/volume/${id}`, { method: "DELETE" });
     queryCache.invalidate("volume:list:");
     return data;
+  },
+};
+
+export const brandAPI = {
+  getAll({ search = "", page = 1, perPage = 10 } = {}, signal) {
+    const params = new URLSearchParams({ page, perPage });
+    if (search) params.set("search", search);
+    return request(`/api/brand?${params}`, { signal });
+  },
+
+  async create(formData) {
+    return request("/api/brand", { method: "POST", body: formData });
+  },
+
+  async update(id, body) {
+    const isFormData = body instanceof FormData;
+    return request(`/api/brand/${id}`, {
+      method: "PUT",
+      body: isFormData ? body : JSON.stringify(body),
+    });
+  },
+
+  async delete(id) {
+    return request(`/api/brand?id=${id}`, { method: "DELETE" });
   },
 };
 

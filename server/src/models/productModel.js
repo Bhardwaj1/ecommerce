@@ -29,9 +29,9 @@ const productSchema = new mongoose.Schema(
     },
 
     brand: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
-      trim: true,
+      ref: "Brand",
     },
 
     volume: {

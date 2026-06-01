@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { categoryAPI, subCategoryAPI, volumeAPI } from "../../../lib/api";
+import { categoryAPI, subCategoryAPI, brandAPI, volumeAPI } from "../../../lib/api";
 
 export default function ProductForm({ initialData, onSubmit, submitLabel }) {
   const router = useRouter();
@@ -31,16 +31,12 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [volumes, setVolumes] = useState([]);
+  const [brands, setBrands] = useState([]);
 
   useEffect(() => {
     volumeAPI.getAll({ perPage: 100 }).then((res) => setVolumes(res.data ?? [])).catch(() => {});
-  }, []);
-
-  // Fetch all categories on mount
-  useEffect(() => {
-    categoryAPI.getAll({ perPage: 100 })
-      .then((res) => setCategories(res.data ?? []))
-      .catch(() => {});
+    categoryAPI.getAll({ perPage: 100 }).then((res) => setCategories(res.data ?? [])).catch(() => {});
+    brandAPI.getAll({ perPage: 100 }).then((res) => setBrands(res.data ?? [])).catch(() => {});
   }, []);
 
   // Fetch subcategories whenever selected category changes
@@ -69,7 +65,6 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
     if (!form.description.trim()) e.description = "Description is required";
     if (!form.alcoholPercent || isNaN(Number(form.alcoholPercent))) e.alcoholPercent = "Valid % required";
     if (form.stock === "" || isNaN(Number(form.stock)) || Number(form.stock) < 0) e.stock = "Valid quantity required";
-    if (!form.slug.trim()) e.slug = "Slug is required";
     if (!form.category) e.category = "Category is required";
     return e;
   }
@@ -81,7 +76,6 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
 
     const fd = new FormData();
     fd.append("name", form.name);
-    fd.append("slug", form.slug);
     fd.append("description", form.description);
     fd.append("price", form.price);
     fd.append("stock", form.stock);
@@ -145,9 +139,17 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
         </div>
         <div>
           <label className={labelClass}>Brand</label>
-          <input className={inputClass} style={{ borderColor: "var(--glass-border)" }}
-            placeholder="e.g. Glenfiddich" value={form.brand}
-            onChange={(e) => field("brand", e.target.value)} />
+          <select
+            className={inputClass}
+            style={{ borderColor: "var(--glass-border)" }}
+            value={form.brand}
+            onChange={(e) => field("brand", e.target.value)}
+          >
+            <option value="" className="bg-zinc-900">Select brand</option>
+            {brands.map((b) => (
+              <option key={b._id} value={b._id} className="bg-zinc-900" style={{ textTransform: "capitalize" }}>{b.name}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -227,15 +229,6 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
           placeholder="Describe the product..." value={form.description}
           onChange={(e) => field("description", e.target.value)} />
         {errors.description && <p className={errorClass}>{errors.description}</p>}
-      </div>
-
-      {/* Slug */}
-      <div>
-        <label className={labelClass}>Slug *</label>
-        <input className={inputClass} style={{ borderColor: errors.slug ? "#f87171" : "var(--glass-border)" }}
-          placeholder="e.g. glenfiddich-12-year" value={form.slug}
-          onChange={(e) => field("slug", e.target.value)} />
-        {errors.slug && <p className={errorClass}>{errors.slug}</p>}
       </div>
 
       {/* Stock + Active */}

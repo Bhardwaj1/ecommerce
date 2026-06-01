@@ -22,6 +22,7 @@ const navGroups = [
     items: [
       { href: "/admin/categories", label: "Categories", icon: "📂" },
       { href: "/admin/subcategories", label: "Subcategories", icon: "📁" },
+      { href: "/admin/brands", label: "Brands", icon: "🏷️" },
       { href: "/admin/volumes", label: "Volumes", icon: "🧪" },
     ],
   },
