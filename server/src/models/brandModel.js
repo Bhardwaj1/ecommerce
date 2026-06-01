@@ -6,6 +6,8 @@ const brandSchema = mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      unique: true,
+      lowercase: true,
     },
     slug: {
       type: String,
@@ -15,6 +17,7 @@ const brandSchema = mongoose.Schema(
     },
     description: {
       type: String,
+      trim: true,
     },
     logo: {
       url: {
@@ -31,7 +34,7 @@ const brandSchema = mongoose.Schema(
       default: true,
     },
   },
-  { timestamp: true },
+  { timestamps: true },
 );
 
 const Brand = mongoose.model("Brand", brandSchema);

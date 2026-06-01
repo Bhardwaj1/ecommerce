@@ -5,10 +5,11 @@ const {
   updateBrand,
   deleteBrand,
 } = require("../controllers/brand.controller");
+const upload = require("../middlewares/multer");
 
 const route = express.Router();
 
-route.post("/", createBrand);
+route.post("/", upload.single("logo"), createBrand);
 route.get("/", getAllBrand);
 route.put("/:id", updateBrand);
 route.delete("/", deleteBrand);
