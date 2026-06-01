@@ -96,7 +96,7 @@ const getAllBrand = asyncHandler(async (req, res) => {
     name: item?.name,
     description: item?.description,
     active: item?.active,
-    logo: item?.logo?.url,
+    logo: item?.logo,
     createdAt: item?.createdAt,
   }));
 
@@ -118,6 +118,10 @@ const getAllBrand = asyncHandler(async (req, res) => {
 const updateBrand = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, description, active } = req.body;
+
+  console.log(req.body);
+  console.log(req.file);
+
   const brand = await Brand.findById(id);
 
   if (!brand) {
@@ -198,7 +202,7 @@ const deleteBrand = asyncHandler(async (req, res) => {
       error: "Brand is already in use",
     });
   }
-  await Cloudinary.uploader.destroy(brand.logo.public_id);
+  await Cloudinary.uploader.destroy(productUsingBrand.logo.public_id);
 
   await Brand.findByIdAndDelete(id);
 

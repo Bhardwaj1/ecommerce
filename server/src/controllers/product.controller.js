@@ -1,11 +1,11 @@
 const Product = require("../models/productModel");
 const cloudinary = require("../config/cloudinary");
+const slugify = require("slugify");
 
 const createProduct = async (req, res) => {
   try {
     const {
       name,
-      slug,
       description,
       price,
       stock,
@@ -29,17 +29,20 @@ const createProduct = async (req, res) => {
       }
     }
 
-    const duplicate = await Product.findOne({ slug });
+    // const duplicate = await Product.findOne();
 
-    if (duplicate) {
-      return res.status(409).json({
-        success: false,
-        error: "Product already exists",
-      });
-    }
+    // if (duplicate) {
+    //   return res.status(409).json({
+    //     success: false,
+    //     error: "Product already exists",
+    //   });
+    // }
     let product = new Product({
       name,
-      slug,
+      slug: slugify(name.toLowerCase(), {
+        strict: true,
+        lower: true,
+      }),
       description,
       price,
       stock,

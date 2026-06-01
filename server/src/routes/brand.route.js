@@ -11,7 +11,7 @@ const route = express.Router();
 
 route.post("/", upload.single("logo"), createBrand);
 route.get("/", getAllBrand);
-route.put("/:id", updateBrand);
-route.delete("/", deleteBrand);
+route.put("/:id", upload.single("logo"), updateBrand);
+route.delete("/:id", deleteBrand);
 
 module.exports = route;
