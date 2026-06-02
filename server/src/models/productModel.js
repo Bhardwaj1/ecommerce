@@ -17,26 +17,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    price: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    stock: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
     brand: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "Brand",
-    },
-
-    volume: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Volume",
     },
 
     alcoholPercentage: {

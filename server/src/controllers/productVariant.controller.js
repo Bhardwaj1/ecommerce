@@ -1,0 +1,180 @@
+const ProductVariant = require("../models/productVariantModel");
+const Product = require("../models/productModel");
+const Volume = require("../models/volumeModel");
+const asyncHandler = require("../utils/asyncHandler");
+
+const createProductVariant = asyncHandler(async (req, res) => {
+  const { productId } = req.params;
+  const { volume, price, stock } = req.body;
+
+  if (!productId) {
+    return res.status(400).json({
+      success: false,
+      error: "Product is required",
+    });
+  }
+
+  if (!volume) {
+    return res.status(400).json({
+      success: false,
+      error: "Volume is required",
+    });
+  }
+
+  const existingVariant = await ProductVariant.findOne({
+    product: productId,
+    volume,
+  });
+
+  if (existingVariant) {
+    return res.status(409).json({
+      success: false,
+      error: "Variant already exists",
+    });
+  }
+  const productDetails = await Product.findById(productId);
+  const volumeDetails = await Volume.findById(volume);
+  let generatedSku = `${productDetails?.slug}-${volumeDetails?.name}`;
+
+  const data = new ProductVariant({
+    product: productId,
+    volume,
+    price,
+    stock,
+    sku: generatedSku.toUpperCase(),
+  });
+
+  await data.save();
+
+  res.status(201).json({
+    success: true,
+    message: "Product Variant created successfully",
+    productVariant: data,
+  });
+});
+const getAllProductVariant = asyncHandler(async (req, res) => {
+  let { search = "", perPage = 10, page = 1 } = req.query;
+  perPage = Number(perPage);
+  page = Number(page);
+
+  let matchStage = search
+    ? {
+        $or: [
+          {
+            "product.name": {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            sku: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ],
+      }
+    : {};
+
+  const variants = await ProductVariant.aggregate([
+    {
+      $lookup: {
+        from: "products",
+        localField: "product",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    {
+      $unwind: "$product",
+    },
+    {
+      $lookup: {
+        from: "Volume",
+        localField: "volume",
+        foreignField: "_id",
+        as: "volume",
+      },
+    },
+    {
+      $unwind: "$volume",
+    },
+    {
+      $match: matchStage,
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+    {
+      $skip: (page - 1) * perPage,
+    },
+    {
+      $limit: perPage,
+    },
+  ]);
+
+  const totalRecords = await ProductVariant.aggregate([
+    {
+      $lookup: {
+        from: "products",
+        localField: "product",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    {
+      $unwind: "$product",
+    },
+    {
+      $match: matchStage,
+    },
+    {
+      $count: "total",
+    },
+  ]);
+
+  const total = totalRecords[0]?.total || 0;
+
+  const formattedProductVariants = variants.map((item) => ({
+    _id: item?._id,
+    sku: item?.sku,
+    price: item?.price,
+    stock: item?.stock,
+    active: item?.active,
+    product: {
+      _id: item?.product?._id,
+      name: item?.product?.name,
+      slug: item?.product?.slug,
+    },
+    volume: {
+      _id: item?.volume?._id,
+      name: item?.volume?._id,
+      valueInMl: itemm?.volume?.valueInMl,
+    },
+    createdAt: -1,
+  }));
+
+  res.status(200).json({
+    success: true,
+    message: "Product variants fetched successfully",
+    data: formattedProductVariants,
+    meta: {
+      page,
+      perPage,
+      totalRecords: total,
+      totalPages: Math.ceil(total / perPage),
+    },
+  });
+});
+
+const updateProductVariant = asyncHandler(async (req, res) => {});
+const deleteProductVariant = asyncHandler(async (req, res) => {});
+
+module.exports = {
+  createProductVariant,
+  getAllProductVariant,
+  updateProductVariant,
+  deleteProductVariant,
+};

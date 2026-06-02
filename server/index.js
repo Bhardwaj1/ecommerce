@@ -14,6 +14,7 @@ const subCategoryRoutes = require("./src/routes/subCategory.route");
 const volumeRoutes = require("./src/routes/volume.route");
 const brandRoutes = require("./src/routes/brand.route");
 const productRoutes = require("./src/routes/product.route");
+const productVariantRoutes = require("./src/routes/productVariant.route");
 
 app.use(express.json());
 app.use(cors());
@@ -24,6 +25,7 @@ app.use("/api/subCategory", subCategoryRoutes);
 app.use("/api/volume", volumeRoutes);
 app.use("/api/brand", brandRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/product/", productVariantRoutes);
 app.get("/", (req, res) => res.send("App is running"));
 
 app.use(errorMiddleware);

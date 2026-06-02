@@ -7,10 +7,7 @@ const createProduct = async (req, res) => {
     const {
       name,
       description,
-      price,
-      stock,
       brand,
-      volume,
       alcoholPercentage,
       category,
       subCategory,
@@ -28,15 +25,6 @@ const createProduct = async (req, res) => {
         });
       }
     }
-
-    // const duplicate = await Product.findOne();
-
-    // if (duplicate) {
-    //   return res.status(409).json({
-    //     success: false,
-    //     error: "Product already exists",
-    //   });
-    // }
     let product = new Product({
       name,
       slug: slugify(name.toLowerCase(), {
@@ -123,7 +111,6 @@ const getAllProduct = async (req, res) => {
       _id: item?._id,
       name: item?.name,
       slug: item?.slug,
-      volume: item?.volume,
       alcoholPercentage: item?.alcoholPercentage,
       category: item?.category,
       thumbnails: item?.images[0].url,
@@ -164,8 +151,6 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    console.log(req.body);
-
     const existingImage = JSON.parse(req.body.existingImage || "[]");
 
     const imageToDelete = product.images.filter(
@@ -196,14 +181,8 @@ const updateProduct = async (req, res) => {
     product.name = req.body.name;
     product.slug = req.body.slug;
     product.description = req.body.description;
-    product.price = req.body.price;
-    product.stock = req.body.stock;
     product.images = finalImages;
     await product.save();
-    // const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
-    //   returnDocument: "after",
-    //   runValidators: true,
-    // });
     res.status(200).json({
       success: true,
       message: "Product updated successfully",
