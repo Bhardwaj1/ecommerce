@@ -90,7 +90,7 @@ const getAllProductVariant = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "Volume",
+        from: "volumes",
         localField: "volume",
         foreignField: "_id",
         as: "volume",
@@ -150,8 +150,8 @@ const getAllProductVariant = asyncHandler(async (req, res) => {
     },
     volume: {
       _id: item?.volume?._id,
-      name: item?.volume?._id,
-      valueInMl: itemm?.volume?.valueInMl,
+      name: item?.volume?.name,
+      valueInMl: item?.volume?.valueInMl,
     },
     createdAt: -1,
   }));
@@ -169,8 +169,37 @@ const getAllProductVariant = asyncHandler(async (req, res) => {
   });
 });
 
-const updateProductVariant = asyncHandler(async (req, res) => {});
-const deleteProductVariant = asyncHandler(async (req, res) => {});
+const updateProductVariant = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  let updatedProductVariant = await ProductVariant.findByIdAndUpdate(
+    id,
+    req.body,
+    {
+      returnDocument: "after",
+      runValidators: true,
+    },
+  );
+
+  let formattedProductVariant = {
+    _id: updatedProductVariant?._id,
+    
+
+  };
+  res.status(200).json({
+    success: true,
+    message: "Product variant Updated successfully",
+    productVariant: formattedProductVariant,
+  });
+});
+const deleteProductVariant = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  await ProductVariant.findByIdAndDelete(id);
+
+  res.status(200).json({
+    message: "Product variant deleted successfully",
+    success: true,
+  });
+});
 
 module.exports = {
   createProductVariant,

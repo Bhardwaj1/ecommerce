@@ -10,7 +10,7 @@ const {
 
 router.post("/:productId/variants", createProductVariant);
 router.get("/variants", getAllProductVariant);
-router.put("/:id", updateProductVariant);
-router.delete("/:id", deleteProductVariant);
+router.put("/variants/:id", updateProductVariant);
+router.delete("/:productId/variants/:id", deleteProductVariant);
 
 module.exports = router;
