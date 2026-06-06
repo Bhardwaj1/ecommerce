@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { categoryAPI, subCategoryAPI, brandAPI, volumeAPI } from "../../../lib/api";
+import { categoryAPI, subCategoryAPI, brandAPI } from "../../../lib/api";
 
 export default function ProductForm({ initialData, onSubmit, submitLabel }) {
   const router = useRouter();
@@ -13,33 +13,27 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
     brand: "",
     category: "",
     subCategory: "",
-    price: "",
     description: "",
     alcoholPercent: "",
-    volume: "750ml",
-    slug: "",
-    stock: "",
     active: true,
     images: [],
     ...initialData,
-    stock: initialData?.stock !== undefined ? String(initialData.stock) : "",
-    alcoholPercent: initialData?.alcoholPercentage !== undefined ? String(initialData.alcoholPercentage) : (initialData?.alcoholPercent ?? ""),
+    alcoholPercent: initialData?.alcoholPercentage !== undefined
+      ? String(initialData.alcoholPercentage)
+      : (initialData?.alcoholPercent ?? ""),
   });
 
   const [errors, setErrors] = useState({});
   const [dragOver, setDragOver] = useState(false);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
-  const [volumes, setVolumes] = useState([]);
   const [brands, setBrands] = useState([]);
 
   useEffect(() => {
-    volumeAPI.getAll({ perPage: 100 }).then((res) => setVolumes(res.data ?? [])).catch(() => {});
     categoryAPI.getAll({ perPage: 100 }).then((res) => setCategories(res.data ?? [])).catch(() => {});
     brandAPI.getAll({ perPage: 100 }).then((res) => setBrands(res.data ?? [])).catch(() => {});
   }, []);
 
-  // Fetch subcategories whenever selected category changes
   useEffect(() => {
     if (!form.category) { setSubCategories([]); return; }
     subCategoryAPI.getAll({ perPage: 100 })
@@ -48,7 +42,6 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
           (s) => (s.parentCategory?._id ?? s.parentCategory) === form.category
         );
         setSubCategories(filtered);
-        // Reset subCategory if it no longer belongs to the new category
         if (filtered.length > 0 && !filtered.find((s) => s._id === form.subCategory)) {
           setForm((prev) => ({ ...prev, subCategory: "" }));
         }
@@ -56,16 +49,13 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
       .catch(() => {});
   }, [form.category]);
 
-  const inStock = Number(form.stock) > 0;
-
   function validate() {
     const e = {};
     if (!form.name.trim()) e.name = "Name is required";
-    if (!form.price || isNaN(Number(String(form.price).replace(/,/g, "")))) e.price = "Valid price required";
     if (!form.description.trim()) e.description = "Description is required";
     if (!form.alcoholPercent || isNaN(Number(form.alcoholPercent))) e.alcoholPercent = "Valid % required";
-    if (form.stock === "" || isNaN(Number(form.stock)) || Number(form.stock) < 0) e.stock = "Valid quantity required";
     if (!form.category) e.category = "Category is required";
+    if (!form.brand) e.brand = "Brand is required";
     return e;
   }
 
@@ -77,12 +67,9 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
     const fd = new FormData();
     fd.append("name", form.name);
     fd.append("description", form.description);
-    fd.append("price", form.price);
-    fd.append("stock", form.stock);
-    fd.append("volume", form.volume);
     fd.append("alcoholPercentage", form.alcoholPercent);
     fd.append("active", form.active);
-    if (form.brand) fd.append("brand", form.brand);
+    fd.append("brand", form.brand);
     fd.append("category", form.category);
     if (form.subCategory) fd.append("subCategory", form.subCategory);
 
@@ -138,18 +125,16 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
           {errors.name && <p className={errorClass}>{errors.name}</p>}
         </div>
         <div>
-          <label className={labelClass}>Brand</label>
-          <select
-            className={inputClass}
-            style={{ borderColor: "var(--glass-border)" }}
-            value={form.brand}
-            onChange={(e) => field("brand", e.target.value)}
-          >
+          <label className={labelClass}>Brand *</label>
+          <select className={inputClass}
+            style={{ borderColor: errors.brand ? "#f87171" : "var(--glass-border)" }}
+            value={form.brand} onChange={(e) => field("brand", e.target.value)}>
             <option value="" className="bg-zinc-900">Select brand</option>
             {brands.map((b) => (
               <option key={b._id} value={b._id} className="bg-zinc-900" style={{ textTransform: "capitalize" }}>{b.name}</option>
             ))}
           </select>
+          {errors.brand && <p className={errorClass}>{errors.brand}</p>}
         </div>
       </div>
 
@@ -157,12 +142,9 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
           <label className={labelClass}>Category *</label>
-          <select
-            className={inputClass}
+          <select className={inputClass}
             style={{ borderColor: errors.category ? "#f87171" : "var(--glass-border)" }}
-            value={form.category}
-            onChange={(e) => field("category", e.target.value)}
-          >
+            value={form.category} onChange={(e) => field("category", e.target.value)}>
             <option value="" className="bg-zinc-900">Select category</option>
             {categories.map((c) => (
               <option key={c._id} value={c._id} className="bg-zinc-900">{c.name}</option>
@@ -172,13 +154,9 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
         </div>
         <div>
           <label className={labelClass}>Sub Category</label>
-          <select
-            className={inputClass}
-            style={{ borderColor: "var(--glass-border)" }}
-            value={form.subCategory}
-            onChange={(e) => field("subCategory", e.target.value)}
-            disabled={!form.category || subCategories.length === 0}
-          >
+          <select className={inputClass} style={{ borderColor: "var(--glass-border)" }}
+            value={form.subCategory} onChange={(e) => field("subCategory", e.target.value)}
+            disabled={!form.category || subCategories.length === 0}>
             <option value="" className="bg-zinc-900">
               {!form.category ? "Select a category first" : subCategories.length === 0 ? "No subcategories" : "Select subcategory"}
             </option>
@@ -189,73 +167,14 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
         </div>
       </div>
 
-      {/* Price + Volume + Alcohol */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div>
-          <label className={labelClass}>Price (₹) *</label>
-          <input className={inputClass} style={{ borderColor: errors.price ? "#f87171" : "var(--glass-border)" }}
-            placeholder="e.g. 1299" value={form.price}
-            onChange={(e) => field("price", e.target.value)} />
-          {errors.price && <p className={errorClass}>{errors.price}</p>}
-        </div>
-        <div>
-          <label className={labelClass}>Volume</label>
-          <select
-            className={inputClass}
-            style={{ borderColor: "var(--glass-border)" }}
-            value={form.volume}
-            onChange={(e) => field("volume", e.target.value)}
-          >
-            <option value="" className="bg-zinc-900">Select volume</option>
-            {volumes.map((v) => (
-              <option key={v._id} value={v._id} className="bg-zinc-900">{v.name}</option>
-            ))}
-          </select>
-        </div>
+      {/* Alcohol % */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
           <label className={labelClass}>Alcohol % *</label>
           <input className={inputClass} style={{ borderColor: errors.alcoholPercent ? "#f87171" : "var(--glass-border)" }}
             placeholder="e.g. 40" value={form.alcoholPercent}
             onChange={(e) => field("alcoholPercent", e.target.value)} />
           {errors.alcoholPercent && <p className={errorClass}>{errors.alcoholPercent}</p>}
-        </div>
-      </div>
-
-      {/* Description */}
-      <div>
-        <label className={labelClass}>Description *</label>
-        <textarea className={inputClass}
-          style={{ borderColor: errors.description ? "#f87171" : "var(--glass-border)", resize: "vertical", minHeight: "100px" }}
-          placeholder="Describe the product..." value={form.description}
-          onChange={(e) => field("description", e.target.value)} />
-        {errors.description && <p className={errorClass}>{errors.description}</p>}
-      </div>
-
-      {/* Stock + Active */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <div>
-          <label className={labelClass}>Stock Quantity *</label>
-          <div className="relative">
-            <input
-              type="number"
-              min="0"
-              className={inputClass}
-              style={{ borderColor: errors.stock ? "#f87171" : inStock ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.4)", paddingRight: "110px" }}
-              placeholder="e.g. 50"
-              value={form.stock}
-              onChange={(e) => field("stock", e.target.value)}
-            />
-            <span
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold px-2 py-0.5 rounded-full pointer-events-none"
-              style={{
-                background: form.stock === "" ? "rgba(255,255,255,0.04)" : inStock ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-                color: form.stock === "" ? "#52525b" : inStock ? "#4ade80" : "#f87171",
-              }}
-            >
-              {form.stock === "" ? "Enter qty" : inStock ? "● In Stock" : "● Out of Stock"}
-            </span>
-          </div>
-          {errors.stock && <p className={errorClass}>{errors.stock}</p>}
         </div>
         <div className="flex flex-col justify-center">
           <label className={labelClass}>Active</label>
@@ -270,6 +189,16 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
         </div>
       </div>
 
+      {/* Description */}
+      <div>
+        <label className={labelClass}>Description *</label>
+        <textarea className={inputClass}
+          style={{ borderColor: errors.description ? "#f87171" : "var(--glass-border)", resize: "vertical", minHeight: "100px" }}
+          placeholder="Describe the product..." value={form.description}
+          onChange={(e) => field("description", e.target.value)} />
+        {errors.description && <p className={errorClass}>{errors.description}</p>}
+      </div>
+
       {/* Image Upload */}
       <div>
         <label className={labelClass}>Product Images</label>
@@ -279,20 +208,13 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
           className="rounded-2xl border-2 border-dashed flex flex-col items-center justify-center py-10 cursor-pointer transition-all"
-          style={{
-            borderColor: dragOver ? "var(--gold)" : "var(--glass-border)",
-            background: dragOver ? "rgba(201,168,76,0.05)" : "rgba(255,255,255,0.02)",
-          }}
-        >
+          style={{ borderColor: dragOver ? "var(--gold)" : "var(--glass-border)", background: dragOver ? "rgba(201,168,76,0.05)" : "rgba(255,255,255,0.02)" }}>
           <span className="text-4xl mb-3">📸</span>
-          <p className="text-white text-sm font-medium mb-1">
-            {dragOver ? "Drop images here" : "Click or drag images here"}
-          </p>
+          <p className="text-white text-sm font-medium mb-1">{dragOver ? "Drop images here" : "Click or drag images here"}</p>
           <p className="text-zinc-600 text-xs">PNG, JPG, WEBP supported · Multiple allowed</p>
           <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
             onChange={(e) => handleFiles(e.target.files)} />
         </div>
-
         {form.images.length > 0 && (
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4">
             {form.images.map((img, index) => (
@@ -319,7 +241,7 @@ export default function ProductForm({ initialData, onSubmit, submitLabel }) {
           </div>
         )}
         {form.images.length > 0 && (
-          <p className="text-xs text-zinc-600 mt-2">First image is used as the main display image. Hover to remove.</p>
+          <p className="text-xs text-zinc-600 mt-2">First image is the main display image. Hover to remove.</p>
         )}
       </div>
 

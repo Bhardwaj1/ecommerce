@@ -15,6 +15,7 @@ const navGroups = [
     items: [
       { href: "/admin/products", label: "Products", icon: "🍾" },
       { href: "/admin/products/add", label: "Add Product", icon: "＋" },
+      { href: "/admin/product-variants", label: "All Variants", icon: "📦" },
     ],
   },
   {

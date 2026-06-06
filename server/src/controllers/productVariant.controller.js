@@ -169,6 +169,11 @@ const getAllProductVariant = asyncHandler(async (req, res) => {
   });
 });
 
+
+const getVariantByProducts=()=>{
+
+};
+
 const updateProductVariant = asyncHandler(async (req, res) => {
   const { id } = req.params;
   let updatedProductVariant = await ProductVariant.findByIdAndUpdate(
@@ -181,20 +186,20 @@ const updateProductVariant = asyncHandler(async (req, res) => {
   );
 
   let formattedProductVariant = {
-    _id: updateProductVariant?._id,
-    sku: updateProductVariant?.sku,
-    price: updateProductVariant?.price,
-    stock: updateProductVariant?.stock,
-    active: updateProductVariant?.active,
+    _id: updatedProductVariant?._id,
+    sku: updatedProductVariant?.sku,
+    price: updatedProductVariant?.price,
+    stock: updatedProductVariant?.stock,
+    active: updatedProductVariant?.active,
     product: {
-      _id: updateProductVariant?.product?._id,
-      name: updateProductVariant?.product?.name,
-      slug: updateProductVariant?.product?.slug,
+      _id: updatedProductVariant?.product?._id,
+      name: updatedProductVariant?.product?.name,
+      slug: updatedProductVariant?.product?.slug,
     },
     volume: {
-      _id: updateProductVariant?.volume?._id,
-      name: updateProductVariant?.volume?.name,
-      valueInMl: updateProductVariant?.volume?.valueInMl,
+      _id: updatedProductVariant?.volume?._id,
+      name: updatedProductVariant?.volume?.name,
+      valueInMl: updatedProductVariant?.volume?.valueInMl,
     },
   };
   res.status(200).json({

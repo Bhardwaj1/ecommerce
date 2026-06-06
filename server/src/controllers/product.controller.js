@@ -32,10 +32,7 @@ const createProduct = async (req, res) => {
         lower: true,
       }),
       description,
-      price,
-      stock,
       brand,
-      volume,
       alcoholPercentage,
       category,
       subCategory,
@@ -186,7 +183,7 @@ const updateProduct = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Product updated successfully",
-      product: updatedProduct,
+      product: product,
     });
   } catch (error) {
     res.status(500).json({
@@ -198,7 +195,7 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    await Product.findByIdAndDelete({ id });
+    await Product.findByIdAndDelete(id);
     res.status(200).json({
       success: true,
       message: "Product deleted successfully",
