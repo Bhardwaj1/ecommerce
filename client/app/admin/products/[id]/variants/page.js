@@ -2,12 +2,12 @@
 
 import { use, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { variantAPI, volumeAPI } from "../../../../lib/api";
-import { Toast, useToast } from "../../../components/Toast";
-import { ConfirmModal } from "../../../components/ConfirmModal";
-import { Button } from "../../../components/Button";
-import { StatusBadge } from "../../../components/StatusBadge";
-import { Loader } from "../../../components/Loader";
+import { variantAPI, volumeAPI } from "../../../../../lib/api";
+import { Toast, useToast } from "../../../../components/Toast";
+import { ConfirmModal } from "../../../../components/ConfirmModal";
+import { Button } from "../../../../components/Button";
+import { StatusBadge } from "../../../../components/StatusBadge";
+import { Loader } from "../../../../components/Loader";
 
 function VariantModal({ productId, variant, volumes, onClose, onSubmit }) {
   const isEdit = !!variant;

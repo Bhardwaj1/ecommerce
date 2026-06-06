@@ -9,6 +9,7 @@ const errorMiddleware = require("./src/middlewares/errorMiddleware");
 const app = express();
 
 // Api routes
+const authRoutes = require("./src/routes/auth.route");
 const categoryRoutes = require("./src/routes/category.route");
 const subCategoryRoutes = require("./src/routes/subCategory.route");
 const volumeRoutes = require("./src/routes/volume.route");
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use(cors());
 
 // Api Urls
+app.use("/api/auth",authRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/subCategory", subCategoryRoutes);
 app.use("/api/volume", volumeRoutes);
