@@ -13,6 +13,6 @@ router.post("/:productId/variant", createProductVariant);
 router.get("/:productId/variants",getVariantByProducts);
 router.get("/variants", getAllProductVariant);
 router.put("/variants/:id", updateProductVariant);
-router.delete("/:productId/variants/:id", deleteProductVariant);
+router.delete("/variants/:id", deleteProductVariant);
 
 module.exports = router;

@@ -202,7 +202,6 @@ const deleteBrand = asyncHandler(async (req, res) => {
       error: "Brand is already in use",
     });
   }
-  await Cloudinary.uploader.destroy(productUsingBrand.logo.public_id);
 
   await Brand.findByIdAndDelete(id);
 

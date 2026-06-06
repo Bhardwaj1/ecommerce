@@ -19,6 +19,24 @@ async function request(path, options = {}) {
   return data;
 }
 
+export const variantAPI = {
+  getByProduct: (productId) => request(`/api/product/${productId}/variants`),
+  getAll({ search = "", page = 1, perPage = 10 } = {}, signal) {
+    const params = new URLSearchParams({ page, perPage });
+    if (search) params.set("search", search);
+    return request(`/api/product/variants?${params}`, { signal });
+  },
+  async add(productId, body) {
+    return request(`/api/product/${productId}/variant`, { method: "POST", body: JSON.stringify(body) });
+  },
+  async update(id, body) {
+    return request(`/api/product/variants/${id}`, { method: "PUT", body: JSON.stringify(body) });
+  },
+  async delete(productId, id) {
+    return request(`/api/product/${productId}/variants/${id}`, { method: "DELETE" });
+  },
+};
+
 export const volumeAPI = {
   getAll({ search = "", page = 1, perPage = 10 } = {}, signal) {
     const params = new URLSearchParams({ page, perPage });
@@ -63,30 +81,6 @@ export const brandAPI = {
 
   async delete(id) {
     return request(`/api/brand?id=${id}`, { method: "DELETE" });
-  },
-};
-
-export const productVariantAPI = {
-  getAll({ search = "", page = 1, perPage = 10 } = {}, signal) {
-    const params = new URLSearchParams({ page, perPage });
-    if (search) params.set("search", search);
-    return request(`/api/product/variants?${params}`, { signal });
-  },
-
-  getByProduct(productId, signal) {
-    return request(`/api/product/${productId}/variants`, { signal });
-  },
-
-  async create(productId, body) {
-    return request(`/api/product/${productId}/variants`, { method: "POST", body: JSON.stringify(body) });
-  },
-
-  async update(id, body) {
-    return request(`/api/product/variants/${id}`, { method: "PUT", body: JSON.stringify(body) });
-  },
-
-  async delete(productId, id) {
-    return request(`/api/product/${productId}/variants/${id}`, { method: "DELETE" });
   },
 };
 

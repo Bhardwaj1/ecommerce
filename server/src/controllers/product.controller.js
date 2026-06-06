@@ -67,26 +67,26 @@ const getAllProduct = async (req, res) => {
         $or: [
           {
             name: {
-              regex: search,
-              options: "i",
+              $regex: search,
+              $options: "i",
             },
           },
           {
             description: {
-              regex: search,
-              options: "i",
+              $regex: search,
+              $options: "i",
             },
           },
           {
             category: {
-              regex: search,
-              options: "i",
+              $regex: search,
+              $options: "i",
             },
           },
           {
             subCategory: {
-              regex: search,
-              options: "i",
+              $regex: search,
+              $options: "i",
             },
           },
         ],
@@ -155,8 +155,8 @@ const updateProduct = async (req, res) => {
         !existingImage.some((img) => img.public_id === oldImages.public_id),
     );
 
-    for (let images of imageToDelete) {
-      await cloudinary.uploader.destroy(image.public_id);
+    for (let img of imageToDelete) {
+      await cloudinary.uploader.destroy(img.public_id);
     }
 
     const uploadedImages = [];
@@ -176,7 +176,6 @@ const updateProduct = async (req, res) => {
     const finalImages = [...existingImage, ...uploadedImages];
 
     product.name = req.body.name;
-    product.slug = req.body.slug;
     product.description = req.body.description;
     product.images = finalImages;
     await product.save();

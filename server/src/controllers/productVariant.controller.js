@@ -182,11 +182,7 @@ const getVariantByProducts = asyncHandler(async (req, res) => {
   let variant = await ProductVariant.find({ product: productId })
     .populate({ path: "product", select: "name slug brand images" })
     .populate({ path: "volume", select: "name valueInMl" });
-  console.log({ variant });
-  let formattedVariant = variant.map((item) => ({
-    _id: item?._id,
-    _id: item?.product,
-  }));
+
   res.status(200).json({
     success: true,
     message: "Product variants fetched successfully",
