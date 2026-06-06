@@ -181,9 +181,21 @@ const updateProductVariant = asyncHandler(async (req, res) => {
   );
 
   let formattedProductVariant = {
-    _id: updatedProductVariant?._id,
-    
-
+    _id: updateProductVariant?._id,
+    sku: updateProductVariant?.sku,
+    price: updateProductVariant?.price,
+    stock: updateProductVariant?.stock,
+    active: updateProductVariant?.active,
+    product: {
+      _id: updateProductVariant?.product?._id,
+      name: updateProductVariant?.product?.name,
+      slug: updateProductVariant?.product?.slug,
+    },
+    volume: {
+      _id: updateProductVariant?.volume?._id,
+      name: updateProductVariant?.volume?.name,
+      valueInMl: updateProductVariant?.volume?.valueInMl,
+    },
   };
   res.status(200).json({
     success: true,
