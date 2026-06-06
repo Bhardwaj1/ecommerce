@@ -169,10 +169,30 @@ const getAllProductVariant = asyncHandler(async (req, res) => {
   });
 });
 
+const getVariantByProducts = asyncHandler(async (req, res) => {
+  const { productId } = req.params;
+  const product = await Product.findById(productId);
 
-const getVariantByProducts=()=>{
-
-};
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      message: "Product not found",
+    });
+  }
+  let variant = await ProductVariant.find({ product: productId })
+    .populate({ path: "product", select: "name slug brand images" })
+    .populate({ path: "volume", select: "name valueInMl" });
+  console.log({ variant });
+  let formattedVariant = variant.map((item) => ({
+    _id: item?._id,
+    _id: item?.product,
+  }));
+  res.status(200).json({
+    success: true,
+    message: "Product variants fetched successfully",
+    data: variant,
+  });
+});
 
 const updateProductVariant = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -221,6 +241,7 @@ const deleteProductVariant = asyncHandler(async (req, res) => {
 module.exports = {
   createProductVariant,
   getAllProductVariant,
+  getVariantByProducts,
   updateProductVariant,
   deleteProductVariant,
 };

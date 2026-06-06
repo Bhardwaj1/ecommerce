@@ -6,9 +6,11 @@ const {
   getAllProductVariant,
   updateProductVariant,
   deleteProductVariant,
+  getVariantByProducts
 } = require("../controllers/productVariant.controller");
 
-router.post("/:productId/variants", createProductVariant);
+router.post("/:productId/variant", createProductVariant);
+router.get("/:productId/variants",getVariantByProducts);
 router.get("/variants", getAllProductVariant);
 router.put("/variants/:id", updateProductVariant);
 router.delete("/:productId/variants/:id", deleteProductVariant);
