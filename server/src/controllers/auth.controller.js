@@ -16,9 +16,6 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   let hashedPassword = await bcrypt.hash(password, saltRounds);
-
-  console.log({ hashedPassword });
-
   const user = new User({
     name,
     email,
@@ -33,4 +30,37 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  const userExists = await User.findOne({ email }).select("+password");
+  if (!userExists) {
+    return res.status(404).json({
+      success: false,
+      error: "User not exists",
+    });
+  }
+
+  const isValidPassword = await bcrypt.compare(password, userExists.password);
+
+  if (!isValidPassword) {
+    res.status(401).json({
+      success: false,
+      error: "Invalid credentials",
+    });
+  }
+
+  let formattedUserData = {
+    _id: userExists?._id,
+    name: userExists?.name,
+    email: userExists?.email,
+    role: userExists?.role,
+  };
+
+  res.status(200).json({
+    success: true,
+    message: "Login successfull",
+    user: formattedUserData,
+  });
+});
+
+module.exports = { registerUser, loginUser };
